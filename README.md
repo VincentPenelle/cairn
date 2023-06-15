@@ -39,7 +39,7 @@ Cairn is able to use two attributes that you can add on the Menhir file:
 
 ## Known limitation and issues
 
-- Cairn has only be made and tested on Linux. As its searching of cmly file is rudimentary, it is also guaranteed it will fail on Windows.
+- Cairn has only be made and tested on Linux. As its searching of cmly file is rudimentary, it is almost guaranteed it will fail on Windows.
 - The error mechanism recovery (activated with value `PopFirst` for `error_strategy`) is very basic and might be useless as is. It might be improved in the future.
 - The lookahead displays only the text parsed and not the corresponding token. That is due to a limitation in Menhir that does not allow to get the terminal corresponding to a token, and that only terminals can be converted to their names, and not tokens.
 
