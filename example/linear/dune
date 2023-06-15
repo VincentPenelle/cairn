@@ -1,0 +1,37 @@
+(ocamllex
+ (modules Lexer))
+
+(menhir
+ (modules Tokens)
+ (flags --table --inspection --only-tokens))
+
+(menhir
+ (modules Parser ParseTerms Tokens)
+ (merge_into Parser)
+ (flags
+  --dump
+  --table
+  --inspection
+  --explain
+  --automaton-graph
+  --cmly
+  --external-tokens
+  Tokens))
+
+(rule
+ (action
+  (with-stdout-to
+   parserMessages.ml
+   (run
+    menhir
+    %{dep:Parser.mly}
+    %{dep:ParseTerms.mly}
+    %{dep:Tokens.mly}
+    --base
+    %{dep:Parser.mly}
+    --compile-errors
+    %{dep:Parser.messages}))))
+
+(library
+ (name linear)
+ (libraries menhirLib))

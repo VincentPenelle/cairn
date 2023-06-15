@@ -1,0 +1,402 @@
+main: TK_RBRACE
+##
+## Ends in an error in state: 0.
+##
+## main' -> . main [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+Closing bracket without matching opening bracket. (1)
+
+main: TK_SUB TK_RBRACE
+##
+## Ends in an error in state: 1.
+##
+## polish -> TK_SUB . polish2 polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_SUB
+##
+
+While in polish term mode, read '$0' right after an operator. Number or variable expected. (2)
+
+main: TK_MUL TK_RBRACE
+##
+## Ends in an error in state: 4.
+##
+## polish -> TK_MUL . polish2 polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_MUL
+##
+
+While in polish term mode, read '$0' right after an operator. Number or variable expected. (3)
+
+main: TK_MOD TK_RBRACE
+##
+## Ends in an error in state: 5.
+##
+## polish -> TK_MOD . polish2 polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_MOD
+##
+
+While in polish term mode, read '$0' right after an operator. Number or variable expected. (4)
+
+main: TK_ADD TK_LBRACE TK_STR
+##
+## Ends in an error in state: 6.
+##
+## polish2 -> TK_LBRACE . polish TK_RBRACE [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_LBRACE
+##
+
+While in polish term mode, read '$0' right after an operator. Number or variable expected. (5)
+
+main: TK_DIV TK_RBRACE
+##
+## Ends in an error in state: 7.
+##
+## polish -> TK_DIV . polish2 polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_DIV
+##
+
+While in polish term mode, read '$0' right after an operator. Number or variable expected. (6)
+
+main: TK_ADD TK_RBRACE
+##
+## Ends in an error in state: 8.
+##
+## polish -> TK_ADD . polish2 polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_ADD
+##
+
+While in polish term mode, read '$0' right after an operator. Number or variable expected. (7)
+
+main: TK_ADD TK_NAT TK_RBRACE
+##
+## Ends in an error in state: 10.
+##
+## polish -> TK_ADD polish2 . polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_ADD polish2
+##
+
+While in polish term mode, read a closing bracket with not enough operands to an operator. (8)
+
+main: TK_DIV TK_NAT TK_RBRACE
+##
+## Ends in an error in state: 13.
+##
+## polish -> TK_DIV polish2 . polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_DIV polish2
+##
+
+While in polish term mode, read a closing bracket with not enough operands to an operator. (9)
+
+main: TK_ADD TK_LBRACE TK_SUB TK_NAT TK_NAT TK_SUB
+##
+## Ends in an error in state: 15.
+##
+## polish2 -> TK_LBRACE polish . TK_RBRACE [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_LBRACE polish
+##
+
+Read an operator after a complete polish term. Did you forget a closing bracket? (10)
+
+main: TK_MOD TK_NAT TK_RBRACE
+##
+## Ends in an error in state: 17.
+##
+## polish -> TK_MOD polish2 . polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_MOD polish2
+##
+
+
+While in polish term mode, read a closing bracket with not enough operands to an operator. (11)
+
+main: TK_MUL TK_NAT TK_RBRACE
+##
+## Ends in an error in state: 19.
+##
+## polish -> TK_MUL polish2 . polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_MUL polish2
+##
+
+While in polish term mode, read a closing bracket with not enough operands to an operator. (12)
+
+main: TK_SUB TK_NAT TK_RBRACE
+##
+## Ends in an error in state: 21.
+##
+## polish -> TK_SUB polish2 . polish2 [ TK_SUB TK_STR TK_RBRACE TK_NAT TK_MUL TK_MOD TK_LBRACE TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_SUB polish2
+##
+
+While in polish term mode, read a closing bracket with not enough operands to an operator. (13)
+
+main: TK_STR TK_STR
+##
+## Ends in an error in state: 23.
+##
+## instruction -> TK_STR . ASSIGN term [ SEMICOLON ]
+## simple -> TK_STR . [ TK_SUB TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_STR
+##
+
+Found variable name not followed by an operator or an assignation. (14)
+
+main: TK_STR ASSIGN TK_RBRACE
+##
+## Ends in an error in state: 24.
+##
+## instruction -> TK_STR ASSIGN . term [ SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_STR ASSIGN
+##
+
+Closing bracket read right after a :=. Term expected. (15)
+
+main: TK_LBRACE TK_SUB
+##
+## Ends in an error in state: 25.
+##
+## infix2 -> TK_LBRACE . infix TK_RBRACE [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## TK_LBRACE
+##
+
+Expected an infix term, after '$0'. (16)
+
+main: TK_LBRACE TK_NAT TK_STR
+##
+## Ends in an error in state: 27.
+##
+## infix -> infix2 . TK_ADD infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_MUL infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_SUB infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_DIV infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_MOD infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## infix2
+##
+
+Read an identifier directly following a number in infix term mode. Did you forget an operator? (17)
+
+main: TK_STR TK_SUB TK_SUB
+##
+## Ends in an error in state: 28.
+##
+## infix -> infix2 TK_SUB . infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## infix2 TK_SUB
+##
+
+I have read '$0' and found two consecutive operations in infix mode. Did you forgot an integer or a variable? (18)
+
+main: TK_STR TK_SUB TK_NAT TK_STR
+##
+## Ends in an error in state: 29.
+##
+## infix -> infix2 . TK_ADD infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_MUL infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_SUB infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 TK_SUB infix2 . [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_DIV infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_MOD infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## infix2 TK_SUB infix2
+##
+
+Read an identifier directly following a number in infix term mode. Did you forget an operator? (19)
+
+main: TK_STR TK_MUL TK_SUB
+##
+## Ends in an error in state: 30.
+##
+## infix -> infix2 TK_MUL . infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## infix2 TK_MUL
+##
+
+I have read '$0' and found two consecutive operations in infix mode. Did you forgot an integer or a variable? (20)
+
+main: TK_STR TK_MOD TK_SUB
+##
+## Ends in an error in state: 33.
+##
+## infix -> infix2 TK_MOD . infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## infix2 TK_MOD
+##
+
+I have read '$0' and found two consecutive operations in infix mode. Did you forgot an integer or a variable? (21)
+
+main: TK_STR TK_DIV TK_SUB
+##
+## Ends in an error in state: 35.
+##
+## infix -> infix2 TK_DIV . infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## infix2 TK_DIV
+##
+
+I have read '$0' and found two consecutive operations in infix mode. Did you forgot an integer or a variable? (22)
+
+main: TK_STR TK_ADD TK_SUB
+##
+## Ends in an error in state: 37.
+##
+## infix -> infix2 TK_ADD . infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## infix2 TK_ADD
+##
+
+I have read '$0' and found two consecutive operations in infix mode. Did you forgot an integer or a variable? (23)
+
+main: TK_STR TK_ADD TK_NAT TK_STR
+##
+## Ends in an error in state: 38.
+##
+## infix -> infix2 . TK_ADD infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 TK_ADD infix2 . [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_MUL infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_SUB infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_DIV infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix -> infix2 . TK_MOD infix2 [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+##
+## The known suffix of the stack is as follows:
+## infix2 TK_ADD infix2
+##
+
+Read an identifier directly following a number in infix term mode. Did you forget an operator? (24)
+
+main: TK_LBRACE TK_NAT TK_ADD TK_NAT SEMICOLON
+##
+## Ends in an error in state: 39.
+##
+## infix2 -> TK_LBRACE infix . TK_RBRACE [ TK_SUB TK_RBRACE TK_MUL TK_MOD TK_DIV TK_ADD SEMICOLON ]
+## infix2 -> infix . [ TK_SUB TK_MUL TK_MOD TK_DIV TK_ADD ]
+##
+## The known suffix of the stack is as follows:
+## TK_LBRACE infix
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 38, spurious reduction of production infix -> infix2 TK_ADD infix2
+##
+
+Ill-parenthesized term. Did you forget a ')'? (25)
+
+#main: TK_LACC TK_RBRACE
+##
+## Ends in an error in state: 45.
+##
+## program -> TK_LACC . program TK_RACC program [ TK_RACC TK_EOF ]
+##
+## The known suffix of the stack is as follows:
+## TK_LACC
+##
+
+#'{' directly followed with a ')'. (26)
+
+#main: TK_LACC TK_STR SEMICOLON TK_RBRACE
+##
+## Ends in an error in state: 47.
+##
+## program -> TK_LACC program . TK_RACC program [ TK_RACC TK_EOF ]
+##
+## The known suffix of the stack is as follows:
+## TK_LACC program
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 51, spurious reduction of production program -> instruction SEMICOLON
+##
+
+#Closing bracket without matching opening bracket. Did you forgot a '('? (27)
+
+#main: TK_LACC TK_STR SEMICOLON TK_RACC TK_RBRACE
+##
+## Ends in an error in state: 48.
+##
+## program -> TK_LACC program TK_RACC . program [ TK_RACC TK_EOF ]
+##
+## The known suffix of the stack is as follows:
+## TK_LACC program TK_RACC
+##
+
+#Closing bracket without matching opening bracket after '$2$1$0'. Did you forgot a '('? (28)
+
+main: TK_NAT TK_STR
+##
+## Ends in an error in state: 50.
+##
+## program -> instruction . SEMICOLON program [ TK_RACC TK_EOF ]
+## program -> instruction . SEMICOLON [ TK_RACC TK_EOF ]
+##
+## The known suffix of the stack is as follows:
+## instruction
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 42, spurious reduction of production term -> simple
+## In state 46, spurious reduction of production instruction -> term
+##
+
+'$0' is a complete instruction. ';' expected. (29)
+
+main: TK_STR SEMICOLON TK_RBRACE
+##
+## Ends in an error in state: 53.
+##
+## main -> program . TK_EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## program
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 51, spurious reduction of production program -> instruction SEMICOLON
+##
+
+Ill-formed instruction after $0. (30)

@@ -1,0 +1,10 @@
+(ocamllex
+ (modules Lexer))
+
+(menhir
+ (modules Parser)
+ (flags --dump --table --inspection --explain --automaton-graph --cmly))
+
+(library
+ (name eee)
+ (libraries menhirLib))
