@@ -45,7 +45,6 @@ Cairn is able to use two attributes that you can add on the Menhir file:
 
 ## Possible improvements
 
-- Making Cairn Windows friendly (very low priority).
 - Improving the gestion of cmly search (if you know how to do this, please explain it to me).
 - Improving display (e.g. navigating stacks and state items, etc.).
 - Showing LR1 objects instead of LR0 ones.
