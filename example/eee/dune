@@ -5,6 +5,11 @@
  (modules Parser)
  (flags --dump --table --inspection --explain --automaton-graph --cmly))
 
+(rule
+ (deps Parser.cmly)
+ (target Cmly.ml)
+ (action (run ocaml-crunch --mode=plain --ext=cmly --output=Cmly.ml .)))
+
 (library
  (name eee)
- (libraries menhirLib))
+ (libraries menhirLib lwt mirage-kv-mem))

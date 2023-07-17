@@ -3,8 +3,6 @@ type error_strategy = Stop | PopFirst
 module type parser_decorated = sig
   type value_parsed
 
-  val parser_name : string
-  val parser_path : string
   val error_strategy : error_strategy
 
   module Parser : sig
@@ -79,13 +77,13 @@ module type parser_logger = sig
   (** [parse_log text lexbuf interactive log_file error_file] parses an input pointed by [lexbuf], whose content is [text]. Displays a terminal user interface allowing to navigate the log of the parser if [interactive is true]. Writes a log of the parser execution in the file of name [log_file] if it is not [None] and an error log in the file of name [error_file] if it is not [None]. Returns the parsed value (if no error was encountered, [None] otherwise)*)
 end
 
-module Make (Parser : parser_decorated) (ParserMessages : parser_messages) =
+module Make (Parser : parser_decorated) (ParserMessages : parser_messages) (Grammar : MenhirSdk.Cmly_api.GRAMMAR)=
 struct
   module Parser = Parser
   open Parser
   module MI = Parser.MenhirInterpreter
   module StateMap = Map.Make (Int)
-
+(*
   let add_slash_if_needed str =
     if str.[String.length str - 1] = '/' then str else str ^ "/"
 
@@ -110,6 +108,8 @@ struct
 
     let filename = find_filename folder_name
   end)
+  *)
+  module G = Grammar
 
   let show text positions =
     MenhirLib.ErrorReports.extract text positions
@@ -429,9 +429,10 @@ struct
     res*)
 end
 
-module MakeWithDefaultMessage (Parser : parser_decorated) =
+module MakeWithDefaultMessage (Parser : parser_decorated) (Grammar : MenhirSdk.Cmly_api.GRAMMAR) =
   Make
     (Parser)
     (struct
       let message x = "Error on state " ^ string_of_int x ^ "."
     end)
+    (Grammar)

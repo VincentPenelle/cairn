@@ -1,4 +1,3 @@
 (executable
  (name visualiser)
- (public_name visualiser)
- (libraries cairn eee linear))
+ (libraries cairn eee linear menhirSdk))

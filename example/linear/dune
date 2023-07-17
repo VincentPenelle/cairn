@@ -31,6 +31,12 @@
     %{dep:Parser.mly}
     --compile-errors
     %{dep:Parser.messages}))))
+  
+
+(rule
+ (deps Parser.cmly)
+ (target Cmly.ml)
+ (action (run ocaml-crunch --mode=plain --ext=cmly --output=Cmly.ml .)))
 
 (library
  (name linear)

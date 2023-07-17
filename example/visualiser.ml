@@ -61,6 +61,11 @@ module CommandLine = struct
     | Some s -> s
 end
 
+module Grammar_eee = MenhirSdk.Cmly_read.Lift (struct
+  let file_content = Option.get (Eee.Cmly.read "Parser.cmly")
+  let prefix = "CMLY" ^ MenhirSdk.Version.version
+  let grammar = Marshal.from_string file_content (String.length prefix)
+end)
 let str_opt_of_str = function "" -> None | s -> Some s
 let str = CommandLine.parse ()
 
@@ -68,30 +73,34 @@ module Eee_Sign : Cairn.Parsing.parser_decorated with type value_parsed = unit =
 struct
   type value_parsed = unit
 
-  let parser_name = "Parser"
-  let parser_path = "eee"
   let error_strategy = Cairn.Parsing.Stop
 
   module Lexer = Eee.Lexer
   module Parser = Eee.Parser
 end
 
-module Eee_parser = Cairn.Parsing.MakeWithDefaultMessage (Eee_Sign)
+module Eee_parser = Cairn.Parsing.MakeWithDefaultMessage (Eee_Sign) (Grammar_eee)
 
 module Linear_Sign :
   Cairn.Parsing.parser_decorated with type value_parsed = Linear.Program.program =
 struct
   type value_parsed = Linear.Program.program
 
-  let parser_name = "Parser"
-  let parser_path = "linear"
   let error_strategy = Cairn.Parsing.PopFirst
 
   module Lexer = Linear.Lexer
   module Parser = Linear.Parser
 end
 
-module Linear_parser = Cairn.Parsing.Make (Linear_Sign) (Linear.ParserMessages)
+
+module Grammar_linear = MenhirSdk.Cmly_read.Lift (struct
+  let file_content = Option.get (Linear.Cmly.read "Parser.cmly")
+  let prefix = "CMLY" ^ MenhirSdk.Version.version
+  let grammar = Marshal.from_string file_content (String.length prefix)
+end)
+
+
+module Linear_parser = Cairn.Parsing.Make (Linear_Sign) (Linear.ParserMessages) (Grammar_linear)
 
 let _ =
   let text, lexbuf =
