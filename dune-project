@@ -17,4 +17,6 @@
   ocaml
   dune
   menhir
-  lambda-term))
+  lambda-term
+  crunch
+  ))

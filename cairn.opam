@@ -15,6 +15,7 @@ depends: [
   "dune" {>= "2.9"}
   "menhir"
   "lambda-term"
+  "crunch"
   "odoc" {with-doc}
 ]
 build: [

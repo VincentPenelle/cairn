@@ -12,4 +12,4 @@
 
 (library
  (name eee)
- (libraries menhirLib lwt mirage-kv-mem))
+ (libraries menhirLib))
