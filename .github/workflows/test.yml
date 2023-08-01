@@ -11,7 +11,7 @@ jobs:
           - ubuntu-latest
           - windows-latest
         ocaml-compiler:
-          - 5.0.x
+          - "5.0"
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
