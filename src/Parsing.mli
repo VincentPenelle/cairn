@@ -22,7 +22,15 @@ module P = StepParsing.Parsing.Make (ParserSign) (Grammar)
 ]}
 assuming [Lexer], [Parser] and [ParserMessages] are the modules produced by menhir (with the right options), and that "Parser.cmly" is the name (with path) to the cmly file produced by menhir. Namely, type [value_parsed] should be rendered visible for the result of the parser to be usable.
 
-For the cmly file, it might not straightforward to use its direct name (especially if the executable is destined to be installed or executed from somewhere else than its own directory). In that case, it might be worth to bundle it in the executable with, for example, ocaml-crunch (see examples provided to see how). 
+For the cmly file, it might not straightforward to use its direct name (especially if the executable is destined to be installed or executed from somewhere else than its own directory).
+  
+In that case, it might be worth to bundle it in the executable with, for example, ocaml-crunch (see examples provided to see how). It is then needed to use the [Lift] functor of {!MenhirSdk.Cmly_read} rather than the [Read] one as follows:
+{[module Grammar = MenhirSdk.Cmly_read.Lift (struct
+  let file_content = Option.get (<Module_generated_by_ocaml_crunch>.read "<name_of_cmly_file>")
+  let prefix = "CMLY" ^ MenhirSdk.Version.version
+  let grammar = Marshal.from_string file_content (String.length prefix)
+end)]}
+This is adapted from the [Read] functor of {!MenhirSdk.Cmly_read}.
 
 @author Vincent Penelle <vincent.penelle@u-bordeaux.fr>. 
 *)

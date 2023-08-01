@@ -46,7 +46,6 @@ module type parser_logger = sig
   module Parser : parser_decorated
 
   val state_to_lr0_list : int -> string list
-  (** Function that associates to a lr1 state number a list of string representing the lr0 items it contains.*)
 
   val parse :
     string ->
@@ -54,18 +53,11 @@ module type parser_logger = sig
     Parser.value_parsed option
     * ParserLog.configuration list
     * (string * string * string) list
-  (** [parse text lexbuf] parses an input pointed by [lexbuf] whose content is [text]. [text] and [lexbuf] might be obtained with MenhirLib.LexerUtil. It returns [(value,log,errors)], where: 
-    {ul {- [value] is either [Some value] if the parser produced a semantical value or [None].}
-      {- [log] is a configuration list that represents the execution of the parser (to be used with functions from [ParserLog] alongside [state_to_lr0_list]).}
-      {- [errors] is a list of error messages encountered along the execution, in order to which they appeared. If this list is not empty, [value] should probably not be trusted.
-      The first string is the position of the error, the second the two tokens between which the error occured, and the last an explanation (from the [ParserMessages] provided).}}*)
 
   val parse_interactive : string -> Lexing.lexbuf -> Parser.value_parsed option
-  (** [parse_interactive text lexbuf] parses an input pointed by [lexbuf], whose content is [text]. Displays a terminal user interface allowing to navigate the log of the parser. Then returns the parsed value (if no error was encountered, [None] otherwise).*)
 
   val parse_log :
     string -> Lexing.lexbuf -> string -> string -> Parser.value_parsed option
-  (** [parse_log text lexbuf log_file error_file] parses an input pointed by [lexbuf], whose content is [text]. Writes a log of the parser execution in the file of name [log_file] and an error log in the file of name [error_file]. Returns the parsed value (if no error was encountered, [None] otherwise)*)
 
   val parse_interactive_or_log :
     string ->
@@ -74,7 +66,6 @@ module type parser_logger = sig
     string option ->
     string option ->
     Parser.value_parsed option
-  (** [parse_log text lexbuf interactive log_file error_file] parses an input pointed by [lexbuf], whose content is [text]. Displays a terminal user interface allowing to navigate the log of the parser if [interactive is true]. Writes a log of the parser execution in the file of name [log_file] if it is not [None] and an error log in the file of name [error_file] if it is not [None]. Returns the parsed value (if no error was encountered, [None] otherwise)*)
 end
 
 module Make (Parser : parser_decorated) (ParserMessages : parser_messages) (Grammar : MenhirSdk.Cmly_api.GRAMMAR)=
@@ -83,32 +74,6 @@ struct
   open Parser
   module MI = Parser.MenhirInterpreter
   module StateMap = Map.Make (Int)
-(*
-  let add_slash_if_needed str =
-    if str.[String.length str - 1] = '/' then str else str ^ "/"
-
-  module G = MenhirSdk.Cmly_read.Read (struct
-    let remove_first_char s = String.sub s 1 (String.length s - 1)
-
-    let go_up_folder name =
-      remove_first_char
-        (List.fold_left
-           (fun a s -> a ^ "/" ^ s)
-           ""
-           (List.rev (List.tl (List.rev (String.split_on_char '/' name)))))
-
-    let folder_name = go_up_folder Sys.executable_name
-    let raw_filename = add_slash_if_needed parser_path ^ parser_name ^ ".cmly"
-
-    let rec find_filename name =
-      if name = "/" then failwith "Error : grammar not found"
-      else if Sys.file_exists (name ^ "/" ^ raw_filename) then
-        name ^ "/" ^ raw_filename
-      else find_filename (go_up_folder name)
-
-    let filename = find_filename folder_name
-  end)
-  *)
   module G = Grammar
 
   let show text positions =
@@ -349,11 +314,6 @@ struct
       [ ParserLog.initial_configuration ]
       []
 
-  (*
-  let parse_file file_to_parse =
-    let text, lexbuf = MenhirLib.LexerUtil.read file_to_parse in
-    parse text lexbuf
-*)
 
   let interactive_or_log interactive log_file error_file value derivations
       errors =
@@ -399,34 +359,6 @@ struct
   let parse_interactive_or_log text lexbuf interactive log_file error_file =
     let value, derivations, errors = parse text lexbuf in
     interactive_or_log interactive log_file error_file value derivations errors
-
-  (* let parse_file_interact file_to_parse interactive log_file error_file =
-       let value, derivations, errors = parse_file file_to_parse in
-       interactive_or_log interactive log_file error_file value derivations errors
-
-     let parse_string str =
-       let lexbuf = Lexing.from_string str in
-       parse str lexbuf
-
-     let parse_string_interact str interactive log_file error_file =
-       let value, derivations, errors = parse_string str in
-       interactive_or_log interactive log_file error_file value derivations errors
-  *)
-
-  (*Bon, ça parse bien depuis stdin MAIS le texte ne va évidemment pas (ça doit pouvoir se contourner par d’autres fonctions cela dit) et surtout ce n’est pas exécuté à chaque ligne, ce qui serait mieux…*)
-  (*let parse_stdin () =
-    let lexbuf = Lexing.from_channel stdin in
-    let supplier = MI.lexer_lexbuf_to_supplier Lexer.token lexbuf in
-    let buffer, supplier = MenhirLib.ErrorReports.wrap_supplier supplier in
-    let checkpoint = Parser.Incremental.main lexbuf.lex_curr_p in
-    Format.printf "@[<v 0>";
-    let res, _, _ =
-      stepParsingDerivations checkpoint supplier "text" buffer
-        [ ParserLog.initial_configuration ]
-        []
-    in
-    Format.printf "@]";
-    res*)
 end
 
 module MakeWithDefaultMessage (Parser : parser_decorated) (Grammar : MenhirSdk.Cmly_api.GRAMMAR) =
