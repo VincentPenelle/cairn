@@ -9,6 +9,8 @@ license: "GPL-2.0-or-later"
 homepage: "https://github.com/VincentPenelle/cairn"
 bug-reports: "https://github.com/VincentPenelle/cairn/issues"
 depends: [
+  "menhirSdk" {>= "20230608"}
+  "menhirLib" {>= "20230608"}
   "ocaml"
   "dune" {>= "2.9"}
   "menhir"
