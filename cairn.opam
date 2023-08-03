@@ -13,10 +13,25 @@ depends: [
   "menhirLib"
   "ocaml"
   "dune" {>= "2.9"}
+  "{>="
+  "2.9"
+  "}"
+  "ocaml"
+  "{>="
+  "4.08"
+  "}"
   "menhir"
+  "{>="
+  "20230608"
+  "}"
   "lambda-term"
   "crunch"
-  "odoc" {with-doc}
+  "odoc"
+  "{with-doc}"
+  "zed"
+  "{>="
+  "3.0.0"
+  "}"
 ]
 build: [
   ["dune" "subst"] {dev}
