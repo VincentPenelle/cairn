@@ -10,6 +10,10 @@ It is not made to be executed or very long inputs, as the trees would be to huge
 
 ## Install
 
+### On Opam
+
+- `opam install cairn`
+
 ### From source - globally
 
 - `dune build`
