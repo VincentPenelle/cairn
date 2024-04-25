@@ -90,8 +90,17 @@ struct
 
   let error_strategy = Cairn.Parsing.PopFirst
 
-  module Lexer = Linear.Lexer
-  module Parser = Linear.Parser
+  module Lexer = struct
+    let token = Linear.Lexer.word
+  end
+
+  module Parser = struct
+    include Linear.Parser
+
+    module Incremental = struct
+      let main = Incremental.main_verbose
+    end
+  end
 end
 
 module Grammar_linear = MenhirSdk.Cmly_read.Lift (struct

@@ -3,6 +3,7 @@
 %}
 
 %start <Program.program> main
+%start <Program.program> main_verbose
 
 %on_error_reduce term program instruction
 
@@ -10,6 +11,9 @@
 
 main:
 | p = program TK_EOF { p }
+
+main_verbose:
+| p = program TK_EOF { Format.printf "The verbose version is used@,"; p}
 
 program [@backtrack true]: 
 | p = program i = instruction SEMICOLON  { p@[i] }

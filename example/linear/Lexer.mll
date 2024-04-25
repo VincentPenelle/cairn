@@ -8,9 +8,9 @@
 let digit = ['0'-'9']
 let alphanum = ['a'-'z' 'A'-'Z' '0'-'9' '\'' '_']
 
-rule token = parse
-    | [' ' '\t' '\r']   {token lexbuf}
-    | '\n'              { Lexing.new_line lexbuf ; token lexbuf }
+rule word = parse
+    | [' ' '\t' '\r']   {word lexbuf}
+    | '\n'              { Lexing.new_line lexbuf ; word lexbuf }
     | ":="              { ASSIGN }
     | ";"               { SEMICOLON }
     | "+"               { TK_ADD }

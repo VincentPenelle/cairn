@@ -55,8 +55,6 @@ module type parser_decorated = sig
 
     exception Error
 
-    val main : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> value_parsed
-
     module MenhirInterpreter : sig
       include
         MenhirLib.IncrementalEngine.INCREMENTAL_ENGINE with type token = token
