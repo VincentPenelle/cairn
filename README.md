@@ -51,11 +51,11 @@ A typical instantiation of the `Make` functor should look like :
 
 ```OCaml
 module ParserSign :
-  StepParsing.Parsing.parser_decorated with type value_parsed = Program.program =
+  Cairn.Parsing.parser_decorated with type value_parsed = Program.program =
 struct
   type value_parsed = Program.program
 
-  let error_strategy = StepParsing.Parsing.PopFirst
+  let error_strategy = Cairn.Parsing.PopFirst
 
   module Lexer = Lexer
   module Parser = Parser
