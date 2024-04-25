@@ -46,7 +46,6 @@ module type parser_decorated = sig
   type value_parsed
   (** The type of value that is produced by the parser. For the generated parser to be usable, it is advised to render this type visible.*)
 
-
   val error_strategy : error_strategy
   (** If [Stop], the parser will stop at the first error encountered. If [PopFirst], it will instead pop the stack until a terminal or non-terminal with attributes backup set in the grammar, and then ignores all tokens until the first that can be shifted and resume parser there -- not ideal, but the only way it seems to be possible.*)
 
@@ -125,6 +124,12 @@ module type parser_logger = sig
     string option ->
     Parser.value_parsed option
   (** [parse_log text lexbuf interactive log_file error_file] parses an input pointed by [lexbuf], whose content is [text]. Displays a terminal user interface allowing to navigate the log of the parser if [interactive is true]. Writes a log of the parser execution in the file of name [log_file] if it is not [None] and an error log in the file of name [error_file] if it is not [None]. Returns the parsed value (if no error was encountered, [None] otherwise)*)
+
+  val parse_string_interactive : string -> Parser.value_parsed option
+  (** [parse_string_interactive string] parses the string [string]. Displays a terminal user interface allowing to navigate the log of the parser. Then returns the parsed value (if no error was encountered, [None] otherwise).*)
+
+  val parse_file_interactive : string -> Parser.value_parsed option
+  (** [parse_file_interactive file] parses the content of the file [file]. Displays a terminal user interface allowing to navigate the log of the parser. Then returns the parsed value (if no error was encountered, [None] otherwise).*)
 end
 
 (** Main functor of this module. It generates a module that can parse a text with the parser provided as an argument, and generates a log of the partial derivations produced along the run of the parser, a log of errors encountered (several errors supported if generated with PopFirst strategy), and can display a tui explorer of the sequence of partial derivations produced by the parser.
@@ -133,9 +138,12 @@ end
     - [Grammar] is the module of type {!MenhirSdk.Cmly_api.GRAMMAR} that has been read from a cmly file produced by menhir with option {i --cmly}.*)
 module Make : functor
   (Parser : parser_decorated)
-  (ParserMessages : parser_messages) (Grammar : MenhirSdk.Cmly_api.GRAMMAR)
+  (ParserMessages : parser_messages)
+  (Grammar : MenhirSdk.Cmly_api.GRAMMAR)
   -> parser_logger with module Parser = Parser
 
 (** Same as Make, but provides defaults error messages of the form "Error on state x" where x is the state where the parser encountered the message. Useful if you do not want to generate messages with menhir (yet).*)
-module MakeWithDefaultMessage : functor (Parser : parser_decorated) (Grammar : MenhirSdk.Cmly_api.GRAMMAR) ->
-  parser_logger with module Parser = Parser
+module MakeWithDefaultMessage : functor
+  (Parser : parser_decorated)
+  (Grammar : MenhirSdk.Cmly_api.GRAMMAR)
+  -> parser_logger with module Parser = Parser

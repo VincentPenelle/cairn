@@ -66,6 +66,9 @@ module type parser_logger = sig
     string option ->
     string option ->
     Parser.value_parsed option
+
+  val parse_string_interactive : string -> Parser.value_parsed option
+  val parse_file_interactive : string -> Parser.value_parsed option
 end
 
 module Make
@@ -363,6 +366,14 @@ struct
   let parse_interactive_or_log text lexbuf interactive log_file error_file =
     let value, derivations, errors = parse text lexbuf in
     interactive_or_log interactive log_file error_file value derivations errors
+
+  let parse_string_interactive string =
+    let lexbuf = Lexing.from_string string in
+    parse_interactive string lexbuf
+
+  let parse_file_interactive file =
+    let text, lexbuf = MenhirLib.LexerUtil.read file in
+    parse_interactive text lexbuf
 end
 
 module MakeWithDefaultMessage
