@@ -59,12 +59,11 @@ struct
 
   module Lexer = Lexer
   module Parser = Parser
-  module ParserMessages = ParserMessages
 end
 
 module Grammar = MenhirSdk.Cmly_read.Read (struct let filename = "Parser.cmly" end)
 
-module P = StepParsing.Parsing.Make (ParserSign) (Grammar)
+module P = StepParsing.Parsing.Make (ParserSign) (ParserMessages) (Grammar)
 ```
 
 assuming `Lexer`, `Parser` and `ParserMessages` are the modules produced by menhir (with the right options), and that "Parser.cmly" is the name (with path) to the cmly file produced by menhir. Namely, type `value_parsed` should be rendered visible for the result of the parser to be usable.
