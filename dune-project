@@ -1,11 +1,20 @@
 (lang dune 2.9)
+
 (using menhir 2.1)
+
 (name cairn)
+
 (generate_opam_files true)
-(source (github VincentPenelle/cairn))
+
+(source
+ (github VincentPenelle/cairn))
+
 (authors "Vincent Penelle")
+
 (maintainers "Vincent Penelle")
+
 (license GPL-2.0-or-later)
+
 (package
  (name cairn)
  (synopsis "A derivation explorer and logger for menhir parser")
@@ -15,10 +24,13 @@
   menhirSdk
   menhirLib
   ocaml
-  (dune (>= 2.9))
-  (ocaml (>= 4.08))
-  (menhir (>= 20230608))
+  (dune
+   (>= 2.9))
+  (ocaml
+   (>= 4.08))
+  (menhir
+   (>= 20230608))
   lambda-term
   crunch
-  (zed (>= 3.0.0))
-  ))
+  (zed
+   (>= 3.0.0))))

@@ -68,7 +68,10 @@ module type parser_logger = sig
     Parser.value_parsed option
 end
 
-module Make (Parser : parser_decorated) (ParserMessages : parser_messages) (Grammar : MenhirSdk.Cmly_api.GRAMMAR)=
+module Make
+    (Parser : parser_decorated)
+    (ParserMessages : parser_messages)
+    (Grammar : MenhirSdk.Cmly_api.GRAMMAR) =
 struct
   module Parser = Parser
   open Parser
@@ -81,25 +84,27 @@ struct
     |> MenhirLib.ErrorReports.sanitize |> MenhirLib.ErrorReports.compress
     |> MenhirLib.ErrorReports.shorten 20
 
-  let find_short_attribute terminal =
+  let find_short_attribute attributes =
     List.fold_left
       (fun acc attr ->
         if acc <> None then acc
         else if G.Attribute.has_label "short" attr then
           Some (G.Attribute.payload attr)
         else None)
-      None
-      (G.Terminal.attributes terminal)
+      None attributes
 
   let string_of_gsymbol = function
-    | G.N a -> G.Nonterminal.name a
+    | G.N a -> (
+        match find_short_attribute (G.Nonterminal.attributes a) with
+        | Some str -> str
+        | None -> G.Nonterminal.name a)
     | G.T a -> (
-        match find_short_attribute a with
+        match find_short_attribute (G.Terminal.attributes a) with
         | Some str -> str
         | None -> G.Terminal.name a)
 
   let string_lists_of_gprod g_prod =
-    let lhs = G.Nonterminal.name (G.Production.lhs g_prod) in
+    let lhs = string_of_gsymbol (G.N (G.Production.lhs g_prod)) in
     let rhs =
       Array.map (fun (a, _, _) -> string_of_gsymbol a) (G.Production.rhs g_prod)
     in
@@ -314,7 +319,6 @@ struct
       [ ParserLog.initial_configuration ]
       []
 
-
   let interactive_or_log interactive log_file error_file value derivations
       errors =
     (match log_file with
@@ -348,8 +352,8 @@ struct
     value
 
   let parse_interactive text lexbuf =
-      let value, derivations, errors = parse text lexbuf in
-  interactive_or_log true None None value derivations errors
+    let value, derivations, errors = parse text lexbuf in
+    interactive_or_log true None None value derivations errors
 
   let parse_log text lexbuf log_file error_file =
     let value, derivations, errors = parse text lexbuf in
@@ -361,7 +365,9 @@ struct
     interactive_or_log interactive log_file error_file value derivations errors
 end
 
-module MakeWithDefaultMessage (Parser : parser_decorated) (Grammar : MenhirSdk.Cmly_api.GRAMMAR) =
+module MakeWithDefaultMessage
+    (Parser : parser_decorated)
+    (Grammar : MenhirSdk.Cmly_api.GRAMMAR) =
   Make
     (Parser)
     (struct
