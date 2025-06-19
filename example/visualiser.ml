@@ -67,6 +67,11 @@ module Grammar_eee = MenhirSdk.Cmly_read.Lift (struct
   let grammar = Marshal.from_string file_content (String.length prefix)
 end)
 
+(* for menhir >= 2023/12/31 *)
+(* module Grammar_eee = MenhirSdk.Cmly_read.FromString (struct
+  let content = Option.get (Eee.Cmly.read "Parser.cmly")
+end) *)
+
 let str_opt_of_str = function "" -> None | s -> Some s
 let str = CommandLine.parse ()
 
@@ -108,6 +113,11 @@ module Grammar_linear = MenhirSdk.Cmly_read.Lift (struct
   let prefix = "CMLY" ^ MenhirSdk.Version.version
   let grammar = Marshal.from_string file_content (String.length prefix)
 end)
+
+(* for menhir >= 2023/12/31 *)
+(* module Grammar_eee = MenhirSdk.Cmly_read.FromString (struct
+  let content = Option.get (Linear.Cmly.read "Parser.cmly")
+end) *)
 
 module Linear_parser =
   Cairn.Parsing.Make (Linear_Sign) (Linear.ParserMessages) (Grammar_linear)
