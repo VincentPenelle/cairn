@@ -70,7 +70,20 @@ assuming `Lexer`, `Parser` and `ParserMessages` are the modules produced by menh
 
 For the cmly file, it might not straightforward to use its direct name (especially if the executable is destined to be installed or executed from somewhere else than its own directory).
   
-In that case, it might be worth to bundle it in the executable with, for example, ocaml-crunch (see examples provided to see how). It is then needed to use the `Lift` functor of `MenhirSdk.Cmly_read` rather than the `Read` one as follows:
+In that case, it might be worth to bundle it in the executable with, for
+example, ocaml-crunch (see examples provided to see how). It is then needed
+to use the [FromString] functor of {!MenhirSdk.Cmly_read} rather than the
+[Read] one as follows:
+
+```OCaml
+module Grammar = MenhirSdk.Cmly_read.FromString (struct
+  let content = Option.get (<Module_generated_by_ocaml_crunch>.read "<name_of_cmly_file>")
+end)
+```
+
+If you are running a version of Menhir anterior to 2023/12/31, then the
+FromString functor is not expose, and you have instead to reproduce its
+behavior with the [Lift] functor as follows:
 
 ```OCaml
 module Grammar = MenhirSdk.Cmly_read.Lift (struct
@@ -80,7 +93,7 @@ module Grammar = MenhirSdk.Cmly_read.Lift (struct
 end)
 ```
 
-This is adapted from the `Read` functor of `MenhirSdk.Cmly_read`.
+This is adapted from the [Read] functor of {!MenhirSdk.Cmly_read}.
 
 If you want to use a starting symbol that is not named `main`, you need to modify the `Parser` module in the definition of `ParserSign` above. In case that starting symbol is named `foo`, you can achieve that by replacing line `module Parser = Parser` with
 
