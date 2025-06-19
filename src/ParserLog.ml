@@ -289,11 +289,9 @@ let get_stack_diff (configuration : configuration) (previous : configuration) =
 open Lwt
 
 let shift_first_elem prev next =
-  match !next with
-  | _ :: _ :: _ ->
-      prev := List.hd !next :: !prev;
-      next := List.tl !next
-  | _ -> ()
+  if List.length !next >= 2 then (
+    prev := List.hd !next :: !prev;
+    next := List.tl !next)
 
 let utf8_char_of_string str =
   List.hd (Zed_string.to_raw_list (Zed_string.of_utf8 str))

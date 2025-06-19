@@ -85,14 +85,19 @@ struct
     |> MenhirLib.ErrorReports.sanitize |> MenhirLib.ErrorReports.compress
     |> MenhirLib.ErrorReports.shorten 20
 
-  let find_short_attribute attributes =
-    List.fold_left
-      (fun acc attr ->
-        if acc <> None then acc
-        else if G.Attribute.has_label "short" attr then
-          Some (G.Attribute.payload attr)
-        else None)
-      None attributes
+  let find_attribute label attributes =
+    try
+      Some
+        (List.hd
+           (List.filter_map
+              (fun attr ->
+                if G.Attribute.has_label label attr then
+                  Some (G.Attribute.payload attr)
+                else None)
+              attributes))
+    with _ -> None
+
+  let find_short_attribute attributes = find_attribute "short" attributes
 
   let string_of_gsymbol = function
     | G.N a -> (
@@ -104,7 +109,7 @@ struct
         | Some str -> str
         | None -> G.Terminal.name a)
 
-  let string_lists_of_gprod g_prod =
+  let string_arrays_of_gprod g_prod =
     let lhs = string_of_gsymbol (G.N (G.Production.lhs g_prod)) in
     let rhs =
       Array.map (fun (a, _, _) -> string_of_gsymbol a) (G.Production.rhs g_prod)
@@ -112,7 +117,7 @@ struct
     (lhs, rhs)
 
   let string_of_gproduction g_prod =
-    let lhs, rhs = string_lists_of_gprod g_prod in
+    let lhs, rhs = string_arrays_of_gprod g_prod in
     let rhs = Array.fold_left (fun acc s -> acc ^ " " ^ s) "" rhs in
     lhs ^ " ->" ^ rhs
 
@@ -120,7 +125,7 @@ struct
     string_of_gproduction (G.Production.of_int (MI.production_index production))
 
   let string_of_gitem (prod, pos) =
-    let lhs, rhs = string_lists_of_gprod prod in
+    let lhs, rhs = string_arrays_of_gprod prod in
     lhs ^ " ->"
     ^ Array.fold_left ( ^ ) ""
         (Array.mapi (fun i symb -> (if i = pos then " _ " else " ") ^ symb) rhs)
