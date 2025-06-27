@@ -17,14 +17,13 @@
 
         module Lexer = Lexer
         module Parser = Parser
-        module ParserMessages = ParserMessages
       end
 
       module Grammar = MenhirSdk.Cmly_read.Read (struct
         let filename = "Parser.cmly"
       end)
 
-      module P = Cairn.Parsing.Make (ParserSign) (Grammar)
+      module P = Cairn.Parsing.Make (ParserSign) (ParserMessages) (Grammar)
     ]}
     assuming [Lexer], [Parser] and [ParserMessages] are the modules produced by
     menhir (with the right options), and that "Parser.cmly" is the name (with
