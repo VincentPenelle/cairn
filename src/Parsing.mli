@@ -107,6 +107,9 @@ end) : sig
 
     val parse_interactive :
       ?strategy:error_strategy ->
+      ?interactive:bool ->
+      ?log_file:string ->
+      ?error_file:string ->
       string ->
       Lexing.lexbuf ->
       T.value_parsed option
@@ -129,10 +132,20 @@ end) : sig
       T.value_parsed option
 
     val parse_string_interactive :
-      ?strategy:error_strategy -> string -> T.value_parsed option
+      ?strategy:error_strategy ->
+      ?interactive:bool ->
+      ?log_file:string ->
+      ?error_file:string ->
+      string ->
+      T.value_parsed option
 
     val parse_file_interactive :
-      ?strategy:error_strategy -> string -> T.value_parsed option
+      ?strategy:error_strategy ->
+      ?interactive:bool ->
+      ?log_file:string ->
+      ?error_file:string ->
+      string ->
+      T.value_parsed option
   end
 end
 

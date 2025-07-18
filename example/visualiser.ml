@@ -10,8 +10,8 @@ module CommandLine = struct
     | _ -> failwith "wrong task string"
 
   let parse_from_file = ref false
-  let log_file = ref ""
-  let error_file = ref ""
+  let log_file = ref None
+  let error_file = ref None
   let interactive = ref true
 
   let arg_spec_list =
@@ -25,11 +25,11 @@ module CommandLine = struct
         " if present, the argument is a filename, otherwise it is the string \
          to parse." );
       ( "-log-file",
-        Arg.Set_string log_file,
+        Arg.String (fun s -> log_file := Some s),
         "if present, the argument is the name of the file to which the log of \
          the parser will be saved." );
       ( "-error-file",
-        Arg.Set_string error_file,
+        Arg.String (fun s -> error_file := Some s),
         "if present, the argument is the name of the file to which the error \
          log of the parser will be saved -- otherwise it is printed to the \
          error output." );
@@ -72,7 +72,6 @@ end)
   let content = Option.get (Eee.Cmly.read "Parser.cmly")
 end) *)
 
-let str_opt_of_str = function "" -> None | s -> Some s
 let str = CommandLine.parse ()
 
 module Eee_parser =
@@ -116,17 +115,16 @@ let _ =
   match !CommandLine.parser with
   | Eee ->
       let _ =
-        Eee_parser.parse_interactive_or_log text lexbuf !CommandLine.interactive
-          (str_opt_of_str !CommandLine.log_file)
-          (str_opt_of_str !CommandLine.error_file)
+        Eee_parser.parse_interactive ~interactive:!CommandLine.interactive
+          ?log_file:!CommandLine.log_file ?error_file:!CommandLine.error_file
+          text lexbuf
       in
       ()
   | Linear -> (
       match
-        Linear_parser.parse_interactive_or_log ~strategy:PopFirst text lexbuf
-          !CommandLine.interactive
-          (str_opt_of_str !CommandLine.log_file)
-          (str_opt_of_str !CommandLine.error_file)
+        Linear_parser.parse_interactive ~strategy:PopFirst
+          ~interactive:!CommandLine.interactive ?log_file:!CommandLine.log_file
+          ?error_file:!CommandLine.error_file text lexbuf
       with
       | None -> Format.printf "No program parsed\n"
       | Some p ->
