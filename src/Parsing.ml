@@ -1,6 +1,6 @@
 type error_strategy = Stop | PopFirst
 
-(* module P (T : sig
+module P (T : sig
   type value_parsed
 end) =
 struct
@@ -34,27 +34,41 @@ struct
     val state_to_lr0_list : int -> string list
 
     val parse :
-      ?strategy:error_strategy -> string ->
+      ?strategy:error_strategy ->
+      string ->
       Lexing.lexbuf ->
       T.value_parsed option
       * ParserLog.configuration list
       * (string * string * string) list
 
-    val parse_interactive : string -> Lexing.lexbuf -> T.value_parsed option
+    val parse_interactive :
+      ?strategy:error_strategy ->
+      string ->
+      Lexing.lexbuf ->
+      T.value_parsed option
 
     val parse_log :
-      ?strategy:error_strategy -> string -> Lexing.lexbuf -> string -> string -> T.value_parsed option
+      ?strategy:error_strategy ->
+      string ->
+      Lexing.lexbuf ->
+      string ->
+      string ->
+      T.value_parsed option
 
     val parse_interactive_or_log :
-      ?strategy:error_strategy -> string ->
+      ?strategy:error_strategy ->
+      string ->
       Lexing.lexbuf ->
       bool ->
       string option ->
       string option ->
       T.value_parsed option
 
-    val parse_string_interactive : ?strategy:error_strategy -> string -> T.value_parsed option
-    val parse_file_interactive : ?strategy:error_strategy -> string -> T.value_parsed option
+    val parse_string_interactive :
+      ?strategy:error_strategy -> string -> T.value_parsed option
+
+    val parse_file_interactive :
+      ?strategy:error_strategy -> string -> T.value_parsed option
   end
 end
 
@@ -65,7 +79,7 @@ struct
   module type lexer = sig
     val token : Lexing.lexbuf -> T.token
   end
-end *)
+end
 
 module type parser_decorated = sig
   type value_parsed
@@ -149,12 +163,14 @@ module type parser_logger = sig
 end
 
 module Make
-    (Parser : parser_decorated)
+    (T : sig
+      type value_parsed
+    end)
+    (Parser : P(T).parser)
+    (Lexer : L(Parser).lexer)
     (ParserMessages : parser_messages)
     (Grammar : MenhirSdk.Cmly_api.GRAMMAR) =
 struct
-  module Parser = Parser
-  open Parser
   module MI = Parser.MenhirInterpreter
   module StateMap = Map.Make (Int)
   module G = Grammar
@@ -461,10 +477,13 @@ struct
 end
 
 module MakeWithDefaultMessage
-    (Parser : parser_decorated)
+    (T : sig
+      type value_parsed
+    end)
+    (Parser : P(T).parser)
+    (Lexer : L(Parser).lexer)
     (Grammar : MenhirSdk.Cmly_api.GRAMMAR) =
-  Make
-    (Parser)
+  Make (T) (Parser) (Lexer)
     (struct
       let message x = "Error on state " ^ string_of_int x ^ "."
     end)
