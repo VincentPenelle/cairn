@@ -74,12 +74,12 @@ module type parser_decorated = sig
   (** The type of value that is produced by the parser. For the generated parser
       to be usable, it is advised to render this type visible.*)
 
-  val error_strategy : error_strategy
+  (* val error_strategy : error_strategy
   (** If [Stop], the parser will stop at the first error encountered. If
       [PopFirst], it will instead pop the stack until a terminal or non-terminal
       with attributes backup set in the grammar, and then ignores all tokens
       until the first that can be shifted and resume parser there -- not ideal,
-      but the only way it seems to be possible.*)
+      but the only way it seems to be possible.*) *)
 
   (** Module generated with menhir. Must be generated with options
       {i --table --inspection --cmly} to work properly, as the inspection API is
@@ -134,6 +134,7 @@ module type parser_logger = sig
       representing the lr0 items it contains.*)
 
   val parse :
+    ?strategy:error_strategy ->
     string ->
     Lexing.lexbuf ->
     Parser.value_parsed option
@@ -153,14 +154,23 @@ module type parser_logger = sig
         the second the two tokens between which the error occured, and the last
         an explanation (from the [ParserMessages] provided).*)
 
-  val parse_interactive : string -> Lexing.lexbuf -> Parser.value_parsed option
+  val parse_interactive :
+    ?strategy:error_strategy ->
+    string ->
+    Lexing.lexbuf ->
+    Parser.value_parsed option
   (** [parse_interactive text lexbuf] parses an input pointed by [lexbuf], whose
       content is [text]. Displays a terminal user interface allowing to navigate
       the log of the parser. Then returns the parsed value (if no error was
       encountered, [None] otherwise).*)
 
   val parse_log :
-    string -> Lexing.lexbuf -> string -> string -> Parser.value_parsed option
+    ?strategy:error_strategy ->
+    string ->
+    Lexing.lexbuf ->
+    string ->
+    string ->
+    Parser.value_parsed option
   (** [parse_log text lexbuf log_file error_file] parses an input pointed by
       [lexbuf], whose content is [text]. Writes a log of the parser execution in
       the file of name [log_file] and an error log in the file of name
@@ -168,6 +178,7 @@ module type parser_logger = sig
       [None] otherwise)*)
 
   val parse_interactive_or_log :
+    ?strategy:error_strategy ->
     string ->
     Lexing.lexbuf ->
     bool ->
@@ -182,12 +193,14 @@ module type parser_logger = sig
       [error_file] if it is not [None]. Returns the parsed value (if no error
       was encountered, [None] otherwise)*)
 
-  val parse_string_interactive : string -> Parser.value_parsed option
+  val parse_string_interactive :
+    ?strategy:error_strategy -> string -> Parser.value_parsed option
   (** [parse_string_interactive string] parses the string [string]. Displays a
       terminal user interface allowing to navigate the log of the parser. Then
       returns the parsed value (if no error was encountered, [None] otherwise).*)
 
-  val parse_file_interactive : string -> Parser.value_parsed option
+  val parse_file_interactive :
+    ?strategy:error_strategy -> string -> Parser.value_parsed option
   (** [parse_file_interactive file] parses the content of the file [file].
       Displays a terminal user interface allowing to navigate the log of the
       parser. Then returns the parsed value (if no error was encountered, [None]

@@ -1,9 +1,74 @@
 type error_strategy = Stop | PopFirst
 
+(* module P (T : sig
+  type value_parsed
+end) =
+struct
+  module type parser = sig
+    type token
+
+    exception Error
+
+    module MenhirInterpreter : sig
+      include
+        MenhirLib.IncrementalEngine.INCREMENTAL_ENGINE with type token = token
+
+      type 'a terminal
+      type _ nonterminal
+
+      include
+        MenhirLib.IncrementalEngine.INSPECTION
+          with type 'a lr1state := 'a lr1state
+          with type production := production
+          with type 'a terminal := 'a terminal
+          with type 'a nonterminal := 'a nonterminal
+          with type 'a env := 'a env
+    end
+
+    module Incremental : sig
+      val main : Lexing.position -> T.value_parsed MenhirInterpreter.checkpoint
+    end
+  end
+
+  module type parser_logger = sig
+    val state_to_lr0_list : int -> string list
+
+    val parse :
+      ?strategy:error_strategy -> string ->
+      Lexing.lexbuf ->
+      T.value_parsed option
+      * ParserLog.configuration list
+      * (string * string * string) list
+
+    val parse_interactive : string -> Lexing.lexbuf -> T.value_parsed option
+
+    val parse_log :
+      ?strategy:error_strategy -> string -> Lexing.lexbuf -> string -> string -> T.value_parsed option
+
+    val parse_interactive_or_log :
+      ?strategy:error_strategy -> string ->
+      Lexing.lexbuf ->
+      bool ->
+      string option ->
+      string option ->
+      T.value_parsed option
+
+    val parse_string_interactive : ?strategy:error_strategy -> string -> T.value_parsed option
+    val parse_file_interactive : ?strategy:error_strategy -> string -> T.value_parsed option
+  end
+end
+
+module L (T : sig
+  type token
+end) =
+struct
+  module type lexer = sig
+    val token : Lexing.lexbuf -> T.token
+  end
+end *)
+
 module type parser_decorated = sig
   type value_parsed
-
-  val error_strategy : error_strategy
 
   module Parser : sig
     type token
@@ -46,18 +111,29 @@ module type parser_logger = sig
   val state_to_lr0_list : int -> string list
 
   val parse :
+    ?strategy:error_strategy ->
     string ->
     Lexing.lexbuf ->
     Parser.value_parsed option
     * ParserLog.configuration list
     * (string * string * string) list
 
-  val parse_interactive : string -> Lexing.lexbuf -> Parser.value_parsed option
+  val parse_interactive :
+    ?strategy:error_strategy ->
+    string ->
+    Lexing.lexbuf ->
+    Parser.value_parsed option
 
   val parse_log :
-    string -> Lexing.lexbuf -> string -> string -> Parser.value_parsed option
+    ?strategy:error_strategy ->
+    string ->
+    Lexing.lexbuf ->
+    string ->
+    string ->
+    Parser.value_parsed option
 
   val parse_interactive_or_log :
+    ?strategy:error_strategy ->
     string ->
     Lexing.lexbuf ->
     bool ->
@@ -65,8 +141,11 @@ module type parser_logger = sig
     string option ->
     Parser.value_parsed option
 
-  val parse_string_interactive : string -> Parser.value_parsed option
-  val parse_file_interactive : string -> Parser.value_parsed option
+  val parse_string_interactive :
+    ?strategy:error_strategy -> string -> Parser.value_parsed option
+
+  val parse_file_interactive :
+    ?strategy:error_strategy -> string -> Parser.value_parsed option
 end
 
 module Make
@@ -155,8 +234,8 @@ struct
         - buffer is the buffer linked to supplier (for error reporting with menhir)
         - derivations is the list of all parser steps (list of ParserLog.configuration) performed until now (in reverse). Accumulator constructing the result to give back ultimately.
         - errors is the list of errors encountered until now. Used both for giving back all encountered errors (at most one if error_strategy is Stop), and to decide if the run was successfull (if not empty and error_strategy is PopFirst, some spurious result might be computed)*)
-  let rec stepParsingDerivations checkpoint supplier text buffer derivations
-      errors =
+  let rec stepParsingDerivations strategy checkpoint supplier text buffer
+      derivations errors =
     match checkpoint with
     | MI.Rejected ->
         ( None,
@@ -172,7 +251,7 @@ struct
           errors )
     | MI.InputNeeded _ ->
         let t, n1, n2 = supplier () in
-        stepParsingDerivations
+        stepParsingDerivations strategy
           (MI.offer checkpoint (t, n1, n2))
           supplier text buffer
           (ParserLog.apply_action (List.hd derivations)
@@ -192,7 +271,7 @@ struct
               | None -> failwith "")
           with _ -> ""
         in
-        stepParsingDerivations
+        stepParsingDerivations strategy
           (MI.offer (MI.input_needed env2) (t, n1, n2))
           supplier text buffer
           (ParserLog.apply_action (List.hd derivations)
@@ -209,7 +288,7 @@ struct
         let new_checkpoint = MI.resume checkpoint in
         let prod_str = string_of_production prod in
         let lhs_str = List.hd (String.split_on_char ' ' prod_str) in
-        stepParsingDerivations new_checkpoint supplier text buffer
+        stepParsingDerivations strategy new_checkpoint supplier text buffer
           (ParserLog.apply_action (List.hd derivations)
              (ParserLog.Reduce
                 ( lhs_str,
@@ -238,7 +317,7 @@ struct
         in
         (*Format.eprintf "\027[38;5;1m%s%s@,%s\027[0m@," location indication
           message;*)
-        match error_strategy with
+        match strategy with
         | Stop ->
             ( None,
               List.rev
@@ -297,7 +376,8 @@ struct
               let n1, n2 =
                 (get_fst_pos !next_lookahead, get_snd_pos !next_lookahead)
               in
-              stepParsingDerivations new_checkpoint supplier text buffer
+              stepParsingDerivations strategy new_checkpoint supplier text
+                buffer
                 (ParserLog.apply_action new_deriv
                    (ParserLog.Input (show text (n1, n2)))
                 :: ParserLog.apply_action (List.hd derivations)
@@ -317,11 +397,11 @@ struct
     let item_list = G.Lr0.items lr0 in
     List.map string_of_gitem item_list
 
-  let parse text lexbuf =
+  let parse ?(strategy = Stop) text lexbuf =
     let supplier = MI.lexer_lexbuf_to_supplier Lexer.token lexbuf in
     let buffer, supplier = MenhirLib.ErrorReports.wrap_supplier supplier in
     let checkpoint = Parser.Incremental.main lexbuf.lex_curr_p in
-    stepParsingDerivations checkpoint supplier text buffer
+    stepParsingDerivations strategy checkpoint supplier text buffer
       [ ParserLog.initial_configuration ]
       []
 
@@ -357,26 +437,27 @@ struct
       ParserLog.derivations_explorer derivations state_to_lr0_list;
     value
 
-  let parse_interactive text lexbuf =
-    let value, derivations, errors = parse text lexbuf in
+  let parse_interactive ?strategy text lexbuf =
+    let value, derivations, errors = parse ?strategy text lexbuf in
     interactive_or_log true None None value derivations errors
 
-  let parse_log text lexbuf log_file error_file =
-    let value, derivations, errors = parse text lexbuf in
+  let parse_log ?strategy text lexbuf log_file error_file =
+    let value, derivations, errors = parse ?strategy text lexbuf in
     interactive_or_log false (Some log_file) (Some error_file) value derivations
       errors
 
-  let parse_interactive_or_log text lexbuf interactive log_file error_file =
-    let value, derivations, errors = parse text lexbuf in
+  let parse_interactive_or_log ?strategy text lexbuf interactive log_file
+      error_file =
+    let value, derivations, errors = parse ?strategy text lexbuf in
     interactive_or_log interactive log_file error_file value derivations errors
 
-  let parse_string_interactive string =
+  let parse_string_interactive ?strategy string =
     let lexbuf = Lexing.from_string string in
-    parse_interactive string lexbuf
+    parse_interactive ?strategy string lexbuf
 
-  let parse_file_interactive file =
+  let parse_file_interactive ?strategy file =
     let text, lexbuf = MenhirLib.LexerUtil.read file in
-    parse_interactive text lexbuf
+    parse_interactive ?strategy text lexbuf
 end
 
 module MakeWithDefaultMessage

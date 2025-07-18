@@ -2,8 +2,6 @@ module Eee_Sign : Cairn.Parsing.parser_decorated with type value_parsed = unit =
 struct
   type value_parsed = unit
 
-  let error_strategy = Cairn.Parsing.Stop
-
   module Lexer = Eee.Lexer
   module Parser = Eee.Parser
 end

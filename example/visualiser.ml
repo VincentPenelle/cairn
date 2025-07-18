@@ -79,8 +79,6 @@ module Eee_Sign : Cairn.Parsing.parser_decorated with type value_parsed = unit =
 struct
   type value_parsed = unit
 
-  let error_strategy = Cairn.Parsing.Stop
-
   module Lexer = Eee.Lexer
   module Parser = Eee.Parser
 end
@@ -92,8 +90,6 @@ module Linear_Sign :
   Cairn.Parsing.parser_decorated with type value_parsed = Linear.Program.program =
 struct
   type value_parsed = Linear.Program.program
-
-  let error_strategy = Cairn.Parsing.PopFirst
 
   module Lexer = struct
     let token = Linear.Lexer.word
@@ -138,7 +134,7 @@ let _ =
       ()
   | Linear -> (
       match
-        Linear_parser.parse_interactive_or_log text lexbuf
+        Linear_parser.parse_interactive_or_log ~strategy:PopFirst text lexbuf
           !CommandLine.interactive
           (str_opt_of_str !CommandLine.log_file)
           (str_opt_of_str !CommandLine.error_file)
