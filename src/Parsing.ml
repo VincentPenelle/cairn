@@ -85,15 +85,6 @@ struct
   end
 end
 
-module L (T : sig
-  type token
-end) =
-struct
-  module type lexer = sig
-    val token : Lexing.lexbuf -> T.token
-  end
-end
-
 module type parser_decorated = sig
   type value_parsed
 
@@ -180,7 +171,9 @@ module Make
       type value_parsed
     end)
     (Parser : P(T).parser)
-    (Lexer : L(Parser).lexer)
+    (Lexer : sig
+      val token : Lexing.lexbuf -> Parser.token
+    end)
     (ParserMessages : parser_messages)
     (Grammar : MenhirSdk.Cmly_api.GRAMMAR) =
 struct
@@ -496,7 +489,9 @@ module MakeWithDefaultMessage
       type value_parsed
     end)
     (Parser : P(T).parser)
-    (Lexer : L(Parser).lexer)
+    (Lexer : sig
+      val token : Lexing.lexbuf -> Parser.token
+    end)
     (Grammar : MenhirSdk.Cmly_api.GRAMMAR) =
   Make (T) (Parser) (Lexer)
     (struct
