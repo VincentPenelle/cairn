@@ -68,85 +68,8 @@ struct
   end
 end
 
-module type parser_decorated = sig
-  type value_parsed
-
-  module Parser : sig
-    type token
-
-    exception Error
-
-    module MenhirInterpreter : sig
-      include
-        MenhirLib.IncrementalEngine.INCREMENTAL_ENGINE with type token = token
-
-      type 'a terminal
-      type _ nonterminal
-
-      include
-        MenhirLib.IncrementalEngine.INSPECTION
-          with type 'a lr1state := 'a lr1state
-          with type production := production
-          with type 'a terminal := 'a terminal
-          with type 'a nonterminal := 'a nonterminal
-          with type 'a env := 'a env
-    end
-
-    module Incremental : sig
-      val main : Lexing.position -> value_parsed MenhirInterpreter.checkpoint
-    end
-  end
-
-  module Lexer : sig
-    val token : Lexing.lexbuf -> Parser.token
-  end
-end
-
 module type parser_messages = sig
   val message : int -> string
-end
-
-module type parser_logger = sig
-  module Parser : parser_decorated
-
-  val state_to_lr0_list : int -> string list
-
-  val parse :
-    ?strategy:error_strategy ->
-    string ->
-    Lexing.lexbuf ->
-    Parser.value_parsed option
-    * ParserLog.configuration list
-    * (string * string * string) list
-
-  val parse_interactive :
-    ?strategy:error_strategy ->
-    string ->
-    Lexing.lexbuf ->
-    Parser.value_parsed option
-
-  val parse_log :
-    ?strategy:error_strategy ->
-    string ->
-    Lexing.lexbuf ->
-    string ->
-    string ->
-    Parser.value_parsed option
-
-  val parse_interactive_or_log :
-    ?strategy:error_strategy ->
-    string ->
-    Lexing.lexbuf ->
-    bool ->
-    string option ->
-    string option ->
-    Parser.value_parsed option
-
-  val parse_string_interactive :
-    ?strategy:error_strategy -> string -> Parser.value_parsed option
-
-  val parse_file_interactive :
-    ?strategy:error_strategy -> string -> Parser.value_parsed option
 end
 
 module Make

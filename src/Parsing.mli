@@ -8,25 +8,26 @@
 
     A typical instantiation of this module should look like :
     {[
-      module ParserSign :
-        Cairn.Parsing.parser_decorated with type value_parsed = Program.program =
-      struct
-        type value_parsed = Program.program
-
-        module Lexer = Lexer
-        module Parser = Parser
-      end
-
       module Grammar = MenhirSdk.Cmly_read.Read (struct
         let filename = "Parser.cmly"
       end)
 
-      module P = Cairn.Parsing.Make (ParserSign) (ParserMessages) (Grammar)
+      module P =
+        Cairn.Parsing.Make
+          (struct
+            type value_parsed = Program.program
+          end)
+          (Parser)
+          (Lexer)
+          (ParserMessages)
+          (Grammar)
     ]}
     assuming [Lexer], [Parser] and [ParserMessages] are the modules produced by
     menhir (with the right options), and that "Parser.cmly" is the name (with
-    path) to the cmly file produced by menhir. Namely, type [value_parsed]
-    should be rendered visible for the result of the parser to be usable.
+    path) to the cmly file produced by menhir. It is assumed that the parsing
+    function of [Parser] is [main], and the lexing function of lexer is [token].
+    If it isn't the case, you need to tweak the corresponding modules to make it
+    so.
 
     For the cmly file, it might not straightforward to use its direct name
     (especially if the executable is destined to be installed or executed from
@@ -43,7 +44,7 @@
     ]}
 
     If you are running a version of Menhir anterior to 2023/12/31, then the
-    FromString functor is not expose, and you have instead to reproduce its
+    FromString functor is not exposed, and you have instead to reproduce its
     behavior with the [Lift] functor as follows:
     {[
       module Grammar = MenhirSdk.Cmly_read.Lift (struct
@@ -65,9 +66,14 @@ type error_strategy =
           (in the grammar) or the stack is empty, and then ignore tokens until
           the first that can be shifted.*)
 
+(** Technical module containing the signature needed and provided by Cairn, in
+    order to make them generic for the type of value returned by the parser.*)
 module P (T : sig
   type value_parsed
 end) : sig
+  (** Signature of a module generated with menhir. Must be generated with
+      options {i --table --inspection --cmly} to work properly, as the
+      inspection API is used, and the .cmly file is analysed.*)
   module type parser = sig
     type token
 
@@ -94,8 +100,19 @@ end) : sig
     end
   end
 
+  (** Signature of the modules produced by this library. Common to {!Make} and
+      {!MakeWithDefaultMessage}. Contains functions to get a log of the
+      execution of the parser, as long with a graphical explorer of this log.
+
+      In most use cases, [parse_string] and [parse_file] should be the most
+      useful functions ; [parse] being useful if you want to generate your own
+      buffer. [parse_to_derivation] is exposed so that it is possible to get the
+      abstract log of the parser (in case one want to use it without using
+      {!ParserLog} module).*)
   module type parser_logger = sig
     val state_to_lr0_list : int -> string list
+    (** Function that associates to a lr1 state number a list of string
+        representing the lr0 items it contains.*)
 
     val parse_to_derivation :
       ?strategy:error_strategy ->
@@ -104,6 +121,22 @@ end) : sig
       T.value_parsed option
       * ParserLog.configuration list
       * (string * string * string) list
+    (** [parse_to_derivation text lexbuf] parses an input pointed by [lexbuf]
+        whose content is [text]. [text] and [lexbuf] might be obtained with
+        MenhirLib.LexerUtil. It returns [(value,log,errors)], where:
+        - [value] is either [Some value] if the parser produced a semantical
+          value or [None].
+        - [log] is a configuration list that represents the execution of the
+          parser (to be used with functions from [ParserLog] alongside
+          [state_to_lr0_list]).
+        - [errors] is a list of error messages encountered along the execution,
+          in order to which they appeared. If this list is not empty, [value]
+          should probably not be trusted. The first string is the position of
+          the error, the second the two tokens between which the error occured,
+          and the last an explanation (from the [ParserMessages] provided).
+
+        The optional argument [?strategy] controls which {!error_strategy} is
+        used if an error is encountered. Defaults to {!Stop}.*)
 
     val parse :
       ?strategy:error_strategy ->
@@ -113,6 +146,21 @@ end) : sig
       string ->
       Lexing.lexbuf ->
       T.value_parsed option
+    (** [parse text lexbuf] parses an input pointed by [lexbuf], whose content
+        is [text], computes the log of its derivation, and depending of its
+        optional arguments, can display a terminal user interface allowing to
+        navigate the log of the parser, and save the log and error log into
+        external files. Then returns the parsed value (if no error was
+        encountered, [None] otherwise).
+
+        - [?strategy] controls which {!error_strategy} is used if an error is
+          encountered. Defaults to {!Stop}.
+        - [?interactive] controls whether the terminal user interface is
+          displayed or not. Defaults to [true].
+        - if [?log_file] is provided, the log of the derivation will be saved in
+          a file of that name.
+        - if [?error_file] is provided, the error log will be saved in a file of
+          that name. *)
 
     val parse_string :
       ?strategy:error_strategy ->
@@ -121,6 +169,8 @@ end) : sig
       ?error_file:string ->
       string ->
       T.value_parsed option
+    (** [parse_string string] parses the string [string], and has the same
+        functionalities as {!parse}. It simply wraps the creation of the buffer.*)
 
     val parse_file :
       ?strategy:error_strategy ->
@@ -129,55 +179,9 @@ end) : sig
       ?error_file:string ->
       string ->
       T.value_parsed option
-  end
-end
-
-(** Signature to provide to the Make functor. The module Parser and Lexer should
-    be those generated by menhir, with options {i --table --inspection --cmly}.*)
-module type parser_decorated = sig
-  type value_parsed
-  (** The type of value that is produced by the parser. For the generated parser
-      to be usable, it is advised to render this type visible.*)
-
-  (* val error_strategy : error_strategy
-  (** If [Stop], the parser will stop at the first error encountered. If
-      [PopFirst], it will instead pop the stack until a terminal or non-terminal
-      with attributes backup set in the grammar, and then ignores all tokens
-      until the first that can be shifted and resume parser there -- not ideal,
-      but the only way it seems to be possible.*) *)
-
-  (** Module generated with menhir. Must be generated with options
-      {i --table --inspection --cmly} to work properly, as the inspection API is
-      used, and the .cmly file is analysed.*)
-  module Parser : sig
-    type token
-
-    exception Error
-
-    module MenhirInterpreter : sig
-      include
-        MenhirLib.IncrementalEngine.INCREMENTAL_ENGINE with type token = token
-
-      type 'a terminal
-      type _ nonterminal
-
-      include
-        MenhirLib.IncrementalEngine.INSPECTION
-          with type 'a lr1state := 'a lr1state
-          with type production := production
-          with type 'a terminal := 'a terminal
-          with type 'a nonterminal := 'a nonterminal
-          with type 'a env := 'a env
-    end
-
-    module Incremental : sig
-      val main : Lexing.position -> value_parsed MenhirInterpreter.checkpoint
-    end
-  end
-
-  (** Lexer generated by menhir.*)
-  module Lexer : sig
-    val token : Lexing.lexbuf -> Parser.token
+    (** [parse_file file] parses the content of the file [file], and has the
+        same functionalities as {!parse}. It simply wraps the creation of the
+        buffer.*)
   end
 end
 
@@ -188,98 +192,21 @@ module type parser_messages = sig
   val message : int -> string
 end
 
-(** Signature of the modules produced by this library. Common to {!Make} and
-    {!MakeWithDefaultMessage}. Contains functions to get a log of the execution
-    of the parser, as long with a graphical explorer of this log.*)
-module type parser_logger = sig
-  module Parser : parser_decorated
-
-  val state_to_lr0_list : int -> string list
-  (** Function that associates to a lr1 state number a list of string
-      representing the lr0 items it contains.*)
-
-  val parse :
-    ?strategy:error_strategy ->
-    string ->
-    Lexing.lexbuf ->
-    Parser.value_parsed option
-    * ParserLog.configuration list
-    * (string * string * string) list
-  (** [parse text lexbuf] parses an input pointed by [lexbuf] whose content is
-      [text]. [text] and [lexbuf] might be obtained with MenhirLib.LexerUtil. It
-      returns [(value,log,errors)], where:
-      - [value] is either [Some value] if the parser produced a semantical value
-        or [None].
-      - [log] is a configuration list that represents the execution of the
-        parser (to be used with functions from [ParserLog] alongside
-        [state_to_lr0_list]).
-      - [errors] is a list of error messages encountered along the execution, in
-        order to which they appeared. If this list is not empty, [value] should
-        probably not be trusted. The first string is the position of the error,
-        the second the two tokens between which the error occured, and the last
-        an explanation (from the [ParserMessages] provided).*)
-
-  val parse_interactive :
-    ?strategy:error_strategy ->
-    string ->
-    Lexing.lexbuf ->
-    Parser.value_parsed option
-  (** [parse_interactive text lexbuf] parses an input pointed by [lexbuf], whose
-      content is [text]. Displays a terminal user interface allowing to navigate
-      the log of the parser. Then returns the parsed value (if no error was
-      encountered, [None] otherwise).*)
-
-  val parse_log :
-    ?strategy:error_strategy ->
-    string ->
-    Lexing.lexbuf ->
-    string ->
-    string ->
-    Parser.value_parsed option
-  (** [parse_log text lexbuf log_file error_file] parses an input pointed by
-      [lexbuf], whose content is [text]. Writes a log of the parser execution in
-      the file of name [log_file] and an error log in the file of name
-      [error_file]. Returns the parsed value (if no error was encountered,
-      [None] otherwise)*)
-
-  val parse_interactive_or_log :
-    ?strategy:error_strategy ->
-    string ->
-    Lexing.lexbuf ->
-    bool ->
-    string option ->
-    string option ->
-    Parser.value_parsed option
-  (** [parse_log text lexbuf interactive log_file error_file] parses an input
-      pointed by [lexbuf], whose content is [text]. Displays a terminal user
-      interface allowing to navigate the log of the parser if
-      [interactive is true]. Writes a log of the parser execution in the file of
-      name [log_file] if it is not [None] and an error log in the file of name
-      [error_file] if it is not [None]. Returns the parsed value (if no error
-      was encountered, [None] otherwise)*)
-
-  val parse_string_interactive :
-    ?strategy:error_strategy -> string -> Parser.value_parsed option
-  (** [parse_string_interactive string] parses the string [string]. Displays a
-      terminal user interface allowing to navigate the log of the parser. Then
-      returns the parsed value (if no error was encountered, [None] otherwise).*)
-
-  val parse_file_interactive :
-    ?strategy:error_strategy -> string -> Parser.value_parsed option
-  (** [parse_file_interactive file] parses the content of the file [file].
-      Displays a terminal user interface allowing to navigate the log of the
-      parser. Then returns the parsed value (if no error was encountered, [None]
-      otherwise).*)
-end
-
 (** Main functor of this module. It generates a module that can parse a text
     with the parser provided as an argument, and generates a log of the partial
     derivations produced along the run of the parser, a log of errors
     encountered (several errors supported if generated with PopFirst strategy),
     and can display a tui explorer of the sequence of partial derivations
     produced by the parser.
-    - [Parser] is the {!parser_decorated} obtained from the modules generated by
-      menhir invocation.
+    - [T] is a module containing the type of value returned by the [main]
+      parsing function of [Parser].
+    - [Parser] is the parser generated by menhir that need to be logged. Assumes
+      the parsing function to be used is name [main] (if it is not the case, you
+      have to rename the function inside [Parser]).
+    - [Lexer] is a module containing a lexing function which is expected to be
+      named [token]. Compatible with a lexer generated with ocamllex whose main
+      function is named [token]. If not, providing the needed function and
+      renaming it [token] in an ad-hoc module is enough.
     - [ParserMessages] is the module of type {!parser_messages} obtained by
       menhir with option {i --compile-errors} and filled in by the user.
     - [Grammar] is the module of type {!MenhirSdk.Cmly_api.GRAMMAR} that has
