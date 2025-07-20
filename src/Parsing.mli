@@ -25,9 +25,9 @@
     assuming [Lexer], [Parser] and [ParserMessages] are the modules produced by
     menhir (with the right options), and that "Parser.cmly" is the name (with
     path) to the cmly file produced by menhir. It is assumed that the parsing
-    function of [Parser] is [main], and the lexing function of lexer is [token].
-    If it isn't the case, you need to tweak the corresponding modules to make it
-    so.
+    function of [Parser.Incremental] is [main], and the lexing function of lexer
+    is [token]. If it isn't the case, you need to tweak the corresponding
+    modules to make it so.
 
     For the cmly file, it might not straightforward to use its direct name
     (especially if the executable is destined to be installed or executed from

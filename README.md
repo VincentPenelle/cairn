@@ -6,7 +6,7 @@ Its goal is to be a teaching (or self-teaching) tool of the behavior of LR1 pars
 
 It can either log its result as log files, or launch a small terminal explorer of the derivation (in utf8), made with lambda-term.
 
-It is not made to be executed or very long inputs, as the trees would be to huge to be properly displayed (and understood), and the tool storing every step of the execution of the parser, a long execution would be heavy in memory. It has been tested on inputs of around several hundreds of tokens without memory issues.
+It is not made to be executed or very long inputs, as the trees would be too huge to be properly displayed (and understood), and the tool storing every step of the execution of the parser, a long execution would probably be heavy in memory. However, it has been tested on inputs of around several hundreds of tokens without memory issues or slowdown.
 
 ## Install
 
@@ -41,32 +41,21 @@ Cairn is able to use two attributes that you can add on the Menhir file:
 - `short` that allows you to give a smaller or more explicit name to a terminal or non-terminal to improve readability of the trees.
 - `backtrack` that is used by the naïve error mechanism recovery. When an error occurs, the parser pops the stack until a element with attributes backtrack is set, and then discards the inputs token until it can shift one when it resumes parsing.
 
-Warning: By default, Cairn only accepts grammars whose starting symbol is named "main" (because the signature of the module accepted by the functor must be fixed). However, it is possible to use a grammar whose starting symbol is named otherwise, in which case in the instanciation of the module of type `parser_decorated` by defining `Parser.Incremental.main` to be the entry point you want to use (from the `Incremental` module of the used parser).
+Warning: By default, Cairn only accepts grammars whose starting symbol is named "main" (because the signature of the module accepted by the functor must be fixed). However, it is possible to use a grammar whose starting symbol is named otherwise, in which case you need to add `Incremental.main` to your `Parser` module (which should be the function in `Incremental` you want to use as entry point).
 
-The lexing function is also expected to be named "token", and another lexing function can be used with the same trick.
+The lexing function is also expected to be named "token", and another lexing function can be used with simply providing it under the name "token".
 
 ### Detailed usage example
 
 A typical instantiation of the `Make` functor should look like :
 
 ```OCaml
-module ParserSign :
-  Cairn.Parsing.parser_decorated with type value_parsed = Program.program =
-struct
-  type value_parsed = Program.program
-
-  let error_strategy = Cairn.Parsing.PopFirst
-
-  module Lexer = Lexer
-  module Parser = Parser
-end
-
 module Grammar = MenhirSdk.Cmly_read.Read (struct let filename = "Parser.cmly" end)
 
-module P = Cairn.Parsing.Make (ParserSign) (ParserMessages) (Grammar)
+module P = Cairn.Parsing.Make (struct type value_parsed = Program.program) (Parser) (Lexer) (ParserMessages) (Grammar)
 ```
 
-assuming `Lexer`, `Parser` and `ParserMessages` are the modules produced by menhir (with the right options), and that "Parser.cmly" is the name (with path) to the cmly file produced by menhir. Namely, type `value_parsed` should be rendered visible for the result of the parser to be usable.
+assuming `Lexer`, `Parser` and `ParserMessages` are the modules produced by menhir (with the right options), and that "Parser.cmly" is the name (with path) to the cmly file produced by menhir. It is assumed that the parsing function of [Parser.Incremental] is [main], and the lexing function of lexer is [token]. If it isn't the case, you need to tweak the corresponding modules to make it so.
 
 For the cmly file, it might not straightforward to use its direct name (especially if the executable is destined to be installed or executed from somewhere else than its own directory).
   
@@ -95,10 +84,10 @@ end)
 
 This is adapted from the [Read] functor of {!MenhirSdk.Cmly_read}.
 
-If you want to use a starting symbol that is not named `main`, you need to modify the `Parser` module in the definition of `ParserSign` above. In case that starting symbol is named `foo`, you can achieve that by replacing line `module Parser = Parser` with
+If you want to use a starting symbol that is not named `main`, you need to modify the `Parser.Incremental` module you use to invoke the `Make` functor. In case that starting symbol is named `foo`, you can achieve that by defining the following module
 
 ```Ocaml
-module Parser = struct
+module ParserFoo = struct
   include Parser
   module Incremental = struct
     let main = Incremental.foo
@@ -106,10 +95,10 @@ module Parser = struct
 end
 ```
 
-If your Lexing function is not name `token`, but, e.g. `bar`, you need to modify the `module Lexer = Lexer` line as follows:
+If your Lexing function is not name `token`, but, e.g. `bar`, you need to pass the following module instead of `Lexer` :
 
 ```Ocaml
-module Lexer = struct
+module LexerBar = struct
   let token = Lexer.bar
 end
 ```

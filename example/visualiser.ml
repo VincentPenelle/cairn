@@ -94,12 +94,20 @@ end)
   let content = Option.get (Linear.Cmly.read "Parser.cmly")
 end) *)
 
+module ParserLin = struct
+  include Linear.Parser
+
+  module Incremental = struct
+    let main = Incremental.main_verbose
+  end
+end
+
 module Linear_parser =
   Cairn.Parsing.Make
     (struct
       type value_parsed = Linear.Program.program
     end)
-    (Linear.Parser)
+    (ParserLin)
     (struct
       let token = Linear.Lexer.word
     end)
