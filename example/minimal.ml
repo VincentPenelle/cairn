@@ -16,4 +16,4 @@ let () =
   if Array.length Sys.argv < 2 then
     Format.printf
       "Please provide a text to parse (representing an arithmetic expression)\n"
-  else ignore (Eee_parser.parse_string_interactive Sys.argv.(1))
+  else ignore (Eee_parser.parse_string Sys.argv.(1))

@@ -97,7 +97,7 @@ end) : sig
   module type parser_logger = sig
     val state_to_lr0_list : int -> string list
 
-    val parse :
+    val parse_to_derivation :
       ?strategy:error_strategy ->
       string ->
       Lexing.lexbuf ->
@@ -105,7 +105,7 @@ end) : sig
       * ParserLog.configuration list
       * (string * string * string) list
 
-    val parse_interactive :
+    val parse :
       ?strategy:error_strategy ->
       ?interactive:bool ->
       ?log_file:string ->
@@ -114,24 +114,7 @@ end) : sig
       Lexing.lexbuf ->
       T.value_parsed option
 
-    val parse_log :
-      ?strategy:error_strategy ->
-      string ->
-      Lexing.lexbuf ->
-      string ->
-      string ->
-      T.value_parsed option
-
-    val parse_interactive_or_log :
-      ?strategy:error_strategy ->
-      string ->
-      Lexing.lexbuf ->
-      bool ->
-      string option ->
-      string option ->
-      T.value_parsed option
-
-    val parse_string_interactive :
+    val parse_string :
       ?strategy:error_strategy ->
       ?interactive:bool ->
       ?log_file:string ->
@@ -139,7 +122,7 @@ end) : sig
       string ->
       T.value_parsed option
 
-    val parse_file_interactive :
+    val parse_file :
       ?strategy:error_strategy ->
       ?interactive:bool ->
       ?log_file:string ->

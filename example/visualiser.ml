@@ -115,14 +115,14 @@ let _ =
   match !CommandLine.parser with
   | Eee ->
       let _ =
-        Eee_parser.parse_interactive ~interactive:!CommandLine.interactive
+        Eee_parser.parse ~interactive:!CommandLine.interactive
           ?log_file:!CommandLine.log_file ?error_file:!CommandLine.error_file
           text lexbuf
       in
       ()
   | Linear -> (
       match
-        Linear_parser.parse_interactive ~strategy:PopFirst
+        Linear_parser.parse ~strategy:PopFirst
           ~interactive:!CommandLine.interactive ?log_file:!CommandLine.log_file
           ?error_file:!CommandLine.error_file text lexbuf
       with

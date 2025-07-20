@@ -33,7 +33,7 @@ struct
   module type parser_logger = sig
     val state_to_lr0_list : int -> string list
 
-    val parse :
+    val parse_to_derivation :
       ?strategy:error_strategy ->
       string ->
       Lexing.lexbuf ->
@@ -41,7 +41,7 @@ struct
       * ParserLog.configuration list
       * (string * string * string) list
 
-    val parse_interactive :
+    val parse :
       ?strategy:error_strategy ->
       ?interactive:bool ->
       ?log_file:string ->
@@ -50,24 +50,7 @@ struct
       Lexing.lexbuf ->
       T.value_parsed option
 
-    val parse_log :
-      ?strategy:error_strategy ->
-      string ->
-      Lexing.lexbuf ->
-      string ->
-      string ->
-      T.value_parsed option
-
-    val parse_interactive_or_log :
-      ?strategy:error_strategy ->
-      string ->
-      Lexing.lexbuf ->
-      bool ->
-      string option ->
-      string option ->
-      T.value_parsed option
-
-    val parse_string_interactive :
+    val parse_string :
       ?strategy:error_strategy ->
       ?interactive:bool ->
       ?log_file:string ->
@@ -75,7 +58,7 @@ struct
       string ->
       T.value_parsed option
 
-    val parse_file_interactive :
+    val parse_file :
       ?strategy:error_strategy ->
       ?interactive:bool ->
       ?log_file:string ->
@@ -419,7 +402,7 @@ struct
     let item_list = G.Lr0.items lr0 in
     List.map string_of_gitem item_list
 
-  let parse ?(strategy = Stop) text lexbuf =
+  let parse_to_derivation ?(strategy = Stop) text lexbuf =
     let supplier = MI.lexer_lexbuf_to_supplier Lexer.token lexbuf in
     let buffer, supplier = MenhirLib.ErrorReports.wrap_supplier supplier in
     let checkpoint = Parser.Incremental.main lexbuf.lex_curr_p in
@@ -459,29 +442,19 @@ struct
       ParserLog.derivations_explorer derivations state_to_lr0_list;
     value
 
-  let parse_interactive ?strategy ?(interactive = true) ?log_file ?error_file
-      text lexbuf =
-    let value, derivations, errors = parse ?strategy text lexbuf in
+  let parse ?strategy ?(interactive = true) ?log_file ?error_file text lexbuf =
+    let value, derivations, errors =
+      parse_to_derivation ?strategy text lexbuf
+    in
     interactive_or_log interactive log_file error_file value derivations errors
 
-  let parse_log ?strategy text lexbuf log_file error_file =
-    let value, derivations, errors = parse ?strategy text lexbuf in
-    interactive_or_log false (Some log_file) (Some error_file) value derivations
-      errors
-
-  let parse_interactive_or_log ?strategy text lexbuf interactive log_file
-      error_file =
-    let value, derivations, errors = parse ?strategy text lexbuf in
-    interactive_or_log interactive log_file error_file value derivations errors
-
-  let parse_string_interactive ?strategy ?interactive ?log_file ?error_file
-      string =
+  let parse_string ?strategy ?interactive ?log_file ?error_file string =
     let lexbuf = Lexing.from_string string in
-    parse_interactive ?strategy ?interactive ?log_file ?error_file string lexbuf
+    parse ?strategy ?interactive ?log_file ?error_file string lexbuf
 
-  let parse_file_interactive ?strategy ?interactive ?log_file ?error_file file =
+  let parse_file ?strategy ?interactive ?log_file ?error_file file =
     let text, lexbuf = MenhirLib.LexerUtil.read file in
-    parse_interactive ?strategy ?interactive ?log_file ?error_file text lexbuf
+    parse ?strategy ?interactive ?log_file ?error_file text lexbuf
 end
 
 module MakeWithDefaultMessage
