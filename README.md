@@ -1,12 +1,12 @@
 # Cairn - A derivation explorer and logger for Menhir parser
 
-Cairn is a small library that can be used conjointly with Menhir parser generator.
+Cairn is a small library that can be used conjointly with the Menhir parser generator.
 Its goal is to provide a step-by-step logger to the execution of the LR1 automaton on its input, in order to visualize the sequence of partial derivations produced (until the final derivation).
 Its goal is to be a teaching (or self-teaching) tool of the behavior of LR1 parser.
 
 It can either log its result as log files, or launch a small terminal explorer of the derivation (in utf8), made with lambda-term.
 
-It is not made to be executed or very long inputs, as the trees would be too huge to be properly displayed (and understood), and the tool storing every step of the execution of the parser, a long execution would probably be heavy in memory. However, it has been tested on inputs of around several hundreds of tokens without memory issues or slowdown.
+It is not made to be executed or very long inputs, as the trees would be too large to be properly displayed (and understood); besides, the tool stores every step of the execution of the parser, so a long execution would probably be heavy in memory. However, it has been tested on inputs of around several hundreds of tokens without memory issues or slowdown.
 
 ## Install
 
@@ -19,15 +19,15 @@ It is not made to be executed or very long inputs, as the trees would be too hug
 - `dune build`
 - `dune install`
 
-This will install it in your current opam installation. You might then use `cairn` library in your projects.
+This will install it in your current opam installation. You might then use the `cairn` library in your projects.
 
 ### From source - locally
 
-Simply copy `src` directory to your project and add library `cairn` where you want to use it.
+Simply copy `src` directory to your project and add the library `cairn` where you want to use it.
 
 ## Usage
 
-To use Cairn, you must first produce a Menhir grammar. The grammar must be compiled with options `--table --inspection --cmly` (to produce the incremental API and the cmly file that cairn needs as an input). Option `--compile-errors` may as well be used to produce the file that contains error messages to be displayed by the parser (that is also used by Cairn).
+To use Cairn, you must first produce a Menhir grammar. The grammar must be compiled with options `--table --inspection --cmly` (to produce the incremental API and the cmly file that cairn needs as an input). The option `--compile-errors` may be used as well to produce the file that contains error messages to be displayed by the parser (that is also used by Cairn).
 
 Thus, in the file where you want to use your parser, you must create a module of type `parser_decorated` (see Parsing.mli) that contains the modules produced by Menhir plus some options, and create a module of type `MenhirSdk.Cmly_api.GRAMMAR` obtained by reading the cmly file produced by Menhir (see MenhirSdk for more details on that).
 
@@ -38,8 +38,8 @@ Cairn also allows you to get the log as an abstract object (`ParserLog.configura
 
 Cairn is able to use two attributes that you can add on the Menhir file:
 
-- `short` that allows you to give a smaller or more explicit name to a terminal or non-terminal to improve readability of the trees.
-- `backtrack` that is used by the naïve error mechanism recovery. When an error occurs, the parser pops the stack until a element with attributes backtrack is set, and then discards the inputs token until it can shift one when it resumes parsing.
+- `short` that allows you to give a smaller or more explicit name to a terminal or non-terminal to improve the readability of the trees.
+- `backtrack` that is used by the naïve error mechanism recovery. When an error occurs, the parser pops the stack until an element with attributes backtrack is set, and then discards the inputs token until it can shift one when it resumes parsing.
 
 Warning: By default, Cairn only accepts grammars whose starting symbol is named "main" (because the signature of the module accepted by the functor must be fixed). However, it is possible to use a grammar whose starting symbol is named otherwise, in which case you need to add `Incremental.main` to your `Parser` module (which should be the function in `Incremental` you want to use as entry point).
 
@@ -71,7 +71,7 @@ end)
 ```
 
 If you are running a version of Menhir anterior to 2023/12/31, then the
-FromString functor is not expose, and you have instead to reproduce its
+FromString functor is not exposed, and you have instead to reproduce its
 behavior with the [Lift] functor as follows:
 
 ```OCaml
@@ -105,7 +105,7 @@ end
 
 ## Known limitation and issues
 
-- Cairn has only be made and tested on Linux. Using it on other systems might fail.
+- Cairn has only been tested on Linux. Using it on other systems might fail.
 - The error mechanism recovery (activated with value `PopFirst` for `error_strategy`) is very basic and might be useless as is. It might be improved in the future.
 - The lookahead displays only the text parsed and not the corresponding token. That is due to a limitation in Menhir that does not allow to get the terminal corresponding to a token, and that only terminals can be converted to their names, and not tokens.
 - The cmly handling is quite tricky as it must be generated by menhir, then used in the program at execution time. A way to properly deal with this is shown in the examples (with ocaml-crunch), but other solutions might exists. To my knowledge, it is not possible to generate the Grammar module directly with menhir invocation, which would be easier.
@@ -114,7 +114,7 @@ end
 
 - Improving display (e.g. navigating stacks and state items, etc.).
 - Showing LR1 objects instead of LR0 ones.
-- Improving error mechanism and introducing other ones (limited by Menhir not allowing to get terminal from token).
+- Improving error mechanism and introducing other ones (limited by Menhir not allowing to get a terminal from its token).
 - Others you might suggest.
 
 ## Authors
