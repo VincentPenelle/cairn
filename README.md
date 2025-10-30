@@ -29,7 +29,7 @@ Simply copy `src` directory to your project and add the library `cairn` where yo
 
 ### Minimal setup example
 
-We suppose you have an existing Menhir grammar along with an accompanying Lexer, i.e. a folder containing `<Lexer>.mll` and `<Parser>.mly`. See for example the grammar located in folder [example/eee]() of the present project. The minimal way to invoke Cairn is performed through the following steps, where elements in `<>` should be adapted to your case:
+We suppose you have an existing Menhir grammar along with an accompanying Lexer, i.e. a folder containing `<Lexer>.mll` and `<Parser>.mly`. See for example the grammar located in folder [example/eee](example/eee) of the present project. The minimal way to invoke Cairn is performed through the following steps, where elements in `<>` should be adapted to your case:
 
 - Run Ocamllex to get the module `<Lexer>` (`ocamllex <Lexer>.mll`).
 - Run Menhir with options `--table --inspection --cmly` to get the module `<Parser>` and the file `<Parser>.cmly` (`menhir --table --inspection --cmly <Parser>.mly`). (It is possible (and better) to automate these two steps in a dune file).
@@ -52,19 +52,19 @@ module Eee_parser =
 
 - You can now parse a string with the function `Eee_parser.parse_string`, e.g., `let res = Eee_parser.parse_string "4+2*5"` will display the UI shown below (that can be navigated), and after closing the UI, the result will be stored in `res` (here, `unit`).
 
-This example is implemented in [example/minimal.ml](). You can run this example directly from Cairn folder with command `dune exec -- example/minimal.exe "4+2*5"`.
+This example is implemented in [example/minimal.ml](example/minimal.ml). You can run this example directly from Cairn folder with command `dune exec -- example/minimal.exe "4+2*5"`.
 
 ![Example of UI](screenshot.jpg)
 
 ### Other usage examples
 
-Here we will describe variations to the minimal example above. Most of the features described here are illustrated in [example/visualiser.ml](). This example can be run from Cairn folder with `dune exec -- visualiser.exe` (it will display a helper message).
+Here we will describe variations to the minimal example above. Most of the features described here are illustrated in [example/visualiser.ml](example/visualiser.ml). This example can be run from Cairn folder with `dune exec -- visualiser.exe` (it will display a helper message).
 
-Consult as well the documentation in [src/Parsing.mli]() and [src/ParserLog.mli]() for further details.
+Consult as well the documentation in [src/Parsing.mli](src/Parsing.mli) and [src/ParserLog.mli](src/ParserLog.mli) for further details.
 
 - For the cmly file, it might not desirable to use its direct name (especially if the executable is destined to be installed or executed from somewhere else than its own directory).
 In that case, it is worth to bundle it in the executable with, for
-example, ocaml-crunch (see [example/linear/dune]() to see how). It is then needed
+example, ocaml-crunch (see [example/linear/dune](example/linear/dune) to see how). It is then needed
 to use the `FromString` functor of `MenhirSdk.Cmly_read` rather than the
 `Read` one as follows:
 
