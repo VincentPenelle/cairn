@@ -62,7 +62,7 @@ Here we will describe variations to the minimal example above. Most of the featu
 
 Consult as well the documentation in [src/Parsing.mli](src/Parsing.mli) and [src/ParserLog.mli](src/ParserLog.mli) for further details.
 
-- For the cmly file, it might not desirable to use its direct name (especially if the executable is destined to be installed or executed from somewhere else than its own directory).
+- For the cmly file, it might not be desirable to use its direct name (especially if the executable is destined to be installed or executed from somewhere else than its own directory).
 In that case, it is worth to bundle it in the executable with, for
 example, ocaml-crunch (see [example/linear/dune](example/linear/dune) to see how). It is then needed
 to use the `FromString` functor of `MenhirSdk.Cmly_read` rather than the
