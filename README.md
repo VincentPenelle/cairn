@@ -27,42 +27,46 @@ Simply copy `src` directory to your project and add the library `cairn` where yo
 
 ## Usage
 
-To use Cairn, you must first produce a Menhir grammar. The grammar must be compiled with options `--table --inspection --cmly` (to produce the incremental API and the cmly file that cairn needs as an input). The option `--compile-errors` may be used as well to produce the file that contains error messages to be displayed by the parser (that is also used by Cairn).
+### Minimal setup example
 
-Thus, in the file where you want to use your parser, you must create a module of type `parser_decorated` (see Parsing.mli) that contains the modules produced by Menhir plus some options, and create a module of type `MenhirSdk.Cmly_api.GRAMMAR` obtained by reading the cmly file produced by Menhir (see MenhirSdk for more details on that).
+We suppose you have an existing Menhir grammar along with an accompanying Lexer, i.e. a folder containing `<Lexer>.mll` and `<Parser>.mly`. See for example the grammar located in folder [example/eee]() of the present project. The minimal way to invoke Cairn is performed through the following steps, where elements in `<>` should be adapted to your case:
 
-You then create the Cairn module using functor `Parsing.Make` or `Parsing.MakeWithDefaultMessage`.
-This module will provide you with parsing functions working like Menhir parsing functions, but which logs and/or displays the execution of your parser.
-
-Cairn also allows you to get the log as an abstract object (`ParserLog.configuration list`) that you can then use with functions of `ParserLog` if you want more custom usage.
-
-Cairn is able to use two attributes that you can add on the Menhir file:
-
-- `short` that allows you to give a smaller or more explicit name to a terminal or non-terminal to improve the readability of the trees.
-- `backtrack` that is used by the naïve error mechanism recovery. When an error occurs, the parser pops the stack until an element with attributes backtrack is set, and then discards the inputs token until it can shift one when it resumes parsing.
-
-Warning: By default, Cairn only accepts grammars whose starting symbol is named "main" (because the signature of the module accepted by the functor must be fixed). However, it is possible to use a grammar whose starting symbol is named otherwise, in which case you need to add `Incremental.main` to your `Parser` module (which should be the function in `Incremental` you want to use as entry point).
-
-The lexing function is also expected to be named "token", and another lexing function can be used with simply providing it under the name "token".
-
-### Detailed usage example
-
-A typical instantiation of the `Make` functor should look like :
+- Run Ocamllex to get the module `<Lexer>` (`ocamllex <Lexer>.mll`).
+- Run Menhir with options `--table --inspection --cmly` to get the module `<Parser>` and the file `<Parser>.cmly` (`menhir --table --inspection --cmly <Parser>.mly`). (It is possible (and better) to automate these two steps in a dune file).
+- Create the two following modules (`Grammar_eee` is the decoding of the cmly file, `Eee_parser` is the module created by Cairn):
 
 ```OCaml
-module Grammar = MenhirSdk.Cmly_read.Read (struct let filename = "Parser.cmly" end)
+module Grammar_eee = MenhirSdk.Cmly_read.Read (struct
+  let filename = "<Parser>.cmly"
+end)
 
-module P = Cairn.Parsing.Make (struct type value_parsed = Program.program) (Parser) (Lexer) (ParserMessages) (Grammar)
+module Eee_parser =
+  Cairn.Parsing.MakeWithDefaultMessage
+    (struct
+      type value_parsed = <type_returned_by_<Parser>.main>
+    end)
+    (<Parser>)
+    (<Lexer>)
+    (Grammar_eee)
 ```
 
-assuming `Lexer`, `Parser` and `ParserMessages` are the modules produced by menhir (with the right options), and that "Parser.cmly" is the name (with path) to the cmly file produced by menhir. It is assumed that the parsing function of [Parser.Incremental] is [main], and the lexing function of lexer is [token]. If it isn't the case, you need to tweak the corresponding modules to make it so.
+- You can now parse a string with the function `Eee_parser.parse_string`, e.g., `let res = Eee_parser.parse_string "4+2*5"` will display the UI shown below (that can be navigated), and after closing the UI, the result will be stored in `res` (here, `unit`).
 
-For the cmly file, it might not straightforward to use its direct name (especially if the executable is destined to be installed or executed from somewhere else than its own directory).
-  
-In that case, it might be worth to bundle it in the executable with, for
-example, ocaml-crunch (see examples provided to see how). It is then needed
-to use the [FromString] functor of {!MenhirSdk.Cmly_read} rather than the
-[Read] one as follows:
+This example is implemented in [example/minimal.ml](). You can run this example directly from Cairn folder with command `dune exec -- example/minimal.exe "4+2*5"`.
+
+![Example of UI](screenshot.jpg)
+
+### Other usage examples
+
+Here we will describe variations to the minimal example above. Most of the features described here are illustrated in [example/visualiser.ml](). This example can be run from Cairn folder with `dune exec -- visualiser.exe` (it will display a helper message).
+
+Consult as well the documentation in [src/Parsing.mli]() and [src/ParserLog.mli]() for further details.
+
+- For the cmly file, it might not desirable to use its direct name (especially if the executable is destined to be installed or executed from somewhere else than its own directory).
+In that case, it is worth to bundle it in the executable with, for
+example, ocaml-crunch (see [example/linear/dune]() to see how). It is then needed
+to use the `FromString` functor of `MenhirSdk.Cmly_read` rather than the
+`Read` one as follows:
 
 ```OCaml
 module Grammar = MenhirSdk.Cmly_read.FromString (struct
@@ -70,38 +74,49 @@ module Grammar = MenhirSdk.Cmly_read.FromString (struct
 end)
 ```
 
-If you are running a version of Menhir anterior to 2023/12/31, then the
-FromString functor is not exposed, and you have instead to reproduce its
-behavior with the [Lift] functor as follows:
+- In addition to the `parse_string` function illustrated above, the module generated by Cairn also provide the following functions:
+  - `parse_file` that treats its argument as the name of a file to be parsed.
+  - `parse` that requires the text to parse and the lexer buffer (of type `Lexing.lexbuf`).
 
-```OCaml
-module Grammar = MenhirSdk.Cmly_read.Lift (struct
-  let file_content = Option.get (<Module_generated_by_ocaml_crunch>.read "<name_of_cmly_file>")
-  let prefix = "CMLY" ^ MenhirSdk.Version.version
-  let grammar = Marshal.from_string file_content (String.length prefix)
-end)
-```
+  These functions have the same behavior as `parse_string`, and admit optional arguments to control the error strategy used (see below), and whether the derivation is shown in a UI (as shown above) and/or logged in a file.
 
-This is adapted from the [Read] functor of {!MenhirSdk.Cmly_read}.
+  There is a last function provided, `parse_to_derivation`, that instead of showing the log of the derivation, returns it to be manipulated in the code.
 
-If you want to use a starting symbol that is not named `main`, you need to modify the `Parser.Incremental` module you use to invoke the `Make` functor. In case that starting symbol is named `foo`, you can achieve that by defining the following module
+- A typical instantiation of the `Make` functor is similar to the minimal one, and should look like :
 
-```Ocaml
-module ParserFoo = struct
-  include Parser
-  module Incremental = struct
-    let main = Incremental.foo
+  ```OCaml
+  module Grammar = MenhirSdk.Cmly_read.Read (struct let filename = "<Parser>.cmly" end)
+
+  module P = Cairn.Parsing.Make (struct type value_parsed = <type_returned_by_<Parser>.main>) (<Parser>) (<Lexer>) (<ParserMessages>) (Grammar)
+  ```
+
+  To get the module `<ParserMessages>`, it is necessary to add the option `--compile-errors` to the invocation of Menhir.
+
+- Cairn proposes an experimental (for now) support of error recovery mechanism. By default, on an error the parsing is stopped. If value `PopFirst` is provided as the optional argument `strategy` to a parsing function, in case of error, the stack will be popped until some terminal, or non-terminal with attribute `backtrack` is on the top (or the stack is empty), after what, tokens will be ignored until some can be shifted onto the stack. Then parsing is resumed.
+
+- Cairn is able to use two attributes that you can add on the terminals and non-terminals in the Menhir file:
+
+  - `short` that allows you to give a smaller or more explicit name to a terminal or non-terminal to improve the readability of the trees.
+  - `backtrack` that is used by the naïve error mechanism recovery described above. When an error occurs, the parser pops the stack until an element with attributes backtrack is set, and then discards the inputs token until it can shift one when it resumes parsing.
+
+- If you want to use a starting symbol that is not named `main`, you need to modify the `<Parser>.Incremental` module you use to invoke the `Make` functor. In case that starting symbol is named `foo`, you can achieve that by defining the following module:
+
+  ```Ocaml
+  module ParserFoo = struct
+    include <Parser>
+    module Incremental = struct
+      let main = Incremental.foo
+    end
   end
-end
-```
+  ```
 
-If your Lexing function is not name `token`, but, e.g. `bar`, you need to pass the following module instead of `Lexer` :
+- If your Lexing function is not name `token`, but, e.g. `bar`, you need to pass the following module instead of `<Lexer>`:
 
-```Ocaml
-module LexerBar = struct
-  let token = Lexer.bar
-end
-```
+  ```Ocaml
+  module LexerBar = struct
+    let token = <Lexer>.bar
+  end
+  ```
 
 ## Known limitation and issues
 
