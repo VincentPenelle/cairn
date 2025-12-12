@@ -1,3 +1,7 @@
+## v2.1
+
+- [Bug fix]: The accepting state was not correctly displayed.
+
 ## v2.0
 
 - [Breaking change] entirely change the signature to a simpler one (remove the need to instantiate a technical module to call Make functor, by simulating a generic module signature (encapsulating it in a module defining the return value type)).

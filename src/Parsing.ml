@@ -154,6 +154,20 @@ struct
     | Rejected -> failwith "reject"
     | Accepted _ -> failwith "accepted"
 
+  (* Function that gets the accepting state of the grammar for a given starting non-terminal (in string format).*)
+  let get_accepting_state axiom =
+    G.Lr0.fold
+      (fun state acc ->
+        let incoming_sym = Option.map G.symbol_name (G.Lr0.incoming state) in
+        let is_accepting =
+          List.fold_left
+            (fun acc (prod, _) -> acc || G.Production.kind prod = `START)
+            false (G.Lr0.items state)
+        in
+        if incoming_sym = Some axiom && is_accepting then G.Lr0.to_int state
+        else acc)
+      0
+
   (* Function that parses the input step by step, and logs every step while doing so. Has also a mechanism to automatically drop a part of the stack when encountering errors (if error_strategy is PopFirst).
      It is for all cases but Error a simple mimic of the behaviour of menhir while logging it into derivations. For Error, if error_strategy is PopFirst, it does modify explicitely the stack taking into account the annotations of the grammar.
         - checkpoint is the current state of the menhir parser.
@@ -221,8 +235,11 @@ struct
              (ParserLog.Reduce
                 ( lhs_str,
                   prod_str,
-                  (try MI.current_state_number (get_env new_checkpoint)
-                   with _ -> G.Lr0.count - 1),
+                  (try MI.current_state_number (get_env new_checkpoint) with
+                  | Failure s when s = "accepted" -> get_accepting_state lhs_str
+                  | _ ->
+                      Format.eprintf "Neither accepted nor able to get a state";
+                      G.Lr0.count - 1),
                   List.length (MI.rhs prod) ))
           :: derivations)
           errors
