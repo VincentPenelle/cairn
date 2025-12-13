@@ -1,4 +1,4 @@
-(lang dune 2.9)
+(lang dune 3.18)
 
 (using menhir 2.1)
 
@@ -33,4 +33,5 @@
   lambda-term
   crunch
   (zed
-   (>= 3.0.0))))
+   (>= 3.0.0)))
+ (maintenance_intent "(latest)"))

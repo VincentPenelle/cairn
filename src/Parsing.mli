@@ -1,3 +1,5 @@
+[@@@ocaml.warning "-67"]
+
 (** This module main use is to create a parser that can log its execution and is
     able to signal several errors (with the right option) from a parser
     generated with menhir.
